@@ -2,7 +2,7 @@ Package: ontologyR
 Title: Evidence-Based Ontology Governance for Data Definitions
 Version: 0.1.0
 Authors@R: 
-    person("Cathal", "Byrne", role = c("aut", "cre"))
+    person("Cathal", "Byrne", email = "cathal470@gmail.com", role = c("aut", "cre"))
 Description: Provides infrastructure for managing data definitions (ontologies) as 
     versioned, testable hypotheses rather than authoritative decrees. Supports 
     registering object types, defining concepts with SQL expressions, recording 
