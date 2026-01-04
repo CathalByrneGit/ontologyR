@@ -1,0 +1,35 @@
+Package: ontologyR
+Title: Evidence-Based Ontology Governance for Data Definitions
+Version: 0.1.0
+Authors@R: 
+    person("Cathal", "Byrne", role = c("aut", "cre"))
+Description: Provides infrastructure for managing data definitions (ontologies) as 
+    versioned, testable hypotheses rather than authoritative decrees. Supports 
+    registering object types, defining concepts with SQL expressions, recording 
+    audit judgments, detecting definition drift, and implementing evidence-based 
+    governance. Designed to make disagreement measurable and prevent silent 
+    definition lock-in.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Imports:
+    DBI,
+    duckdb,
+    dplyr,
+    dbplyr,
+    tibble,
+    glue,
+    rlang,
+    cli,
+    digest,
+    jsonlite
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown,
+    zoo
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+URL: https://github.com/CathalByrneGit/ontologyR
+BugReports: https://github.com/CathalByrneGit/ontologyR/issues
