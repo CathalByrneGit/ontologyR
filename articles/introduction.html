@@ -112,10 +112,10 @@ adoption and deprecation</li>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/CathalByrneGit/ontologyR" class="external-link">ontologyR</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Connect to an ontology database</span></span>
-<span><span class="fu">ont_connect</span><span class="op">(</span><span class="st">":memory:"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_connect.html">ont_connect</a></span><span class="op">(</span><span class="st">":memory:"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># First, we need some data to define concepts against</span></span>
-<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbWriteTable.html" class="external-link">dbWriteTable</a></span><span class="op">(</span><span class="fu">ont_get_connection</span><span class="op">(</span><span class="op">)</span>, <span class="st">"encounters"</span>, <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbWriteTable.html" class="external-link">dbWriteTable</a></span><span class="op">(</span><span class="fu"><a href="../reference/ont_get_connection.html">ont_get_connection</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"encounters"</span>, <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
 <span>  encounter_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E1"</span>, <span class="st">"E2"</span>, <span class="st">"E3"</span>, <span class="st">"E4"</span>, <span class="st">"E5"</span><span class="op">)</span>,</span>
 <span>  patient_age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">80</span>, <span class="fl">42</span>, <span class="fl">70</span>, <span class="fl">65</span>, <span class="fl">55</span><span class="op">)</span>,</span>
 <span>  planned_intervention_24h <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
@@ -123,7 +123,7 @@ adoption and deprecation</li>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Register the object type (maps logical name to physical table)</span></span>
-<span><span class="fu">ont_register_object</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_register_object.html">ont_register_object</a></span><span class="op">(</span></span>
 <span>  object_type <span class="op">=</span> <span class="st">"Encounter"</span>,</span>
 <span>  table_name <span class="op">=</span> <span class="st">"encounters"</span>,</span>
 <span>  pk_column <span class="op">=</span> <span class="st">"encounter_id"</span>,</span>
@@ -131,7 +131,7 @@ adoption and deprecation</li>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Define a concept</span></span>
-<span><span class="fu">ont_define_concept</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_define_concept.html">ont_define_concept</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"ready_for_discharge"</span>,</span>
 <span>  object_type <span class="op">=</span> <span class="st">"Encounter"</span>,</span>
 <span>  description <span class="op">=</span> <span class="st">"Patient is clinically ready to leave hospital"</span>,</span>
@@ -139,7 +139,7 @@ adoption and deprecation</li>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Add version 1: simple proxy definition</span></span>
-<span><span class="fu">ont_add_version</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_add_version.html">ont_add_version</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"ready_for_discharge"</span>,</span>
 <span>  scope <span class="op">=</span> <span class="st">"flow"</span>,</span>
 <span>  version <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -149,7 +149,7 @@ adoption and deprecation</li>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Evaluate the concept</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">ont_evaluate</span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_evaluate.html">ont_evaluate</a></span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 5 × 5</span></span>
 <span><span class="co">#&gt;   encounter_id patient_age planned_intervention_24h arrangements_confirmed concept_value</span></span>
@@ -168,7 +168,7 @@ sample cases that the system says meet a definition, have humans check
 if that’s actually true, and track the disagreement rate.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Sample cases for audit</span></span>
-<span><span class="va">sample</span> <span class="op">&lt;-</span> <span class="fu">ont_sample_for_audit</span><span class="op">(</span></span>
+<span><span class="va">sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_sample_for_audit.html">ont_sample_for_audit</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"ready_for_discharge"</span>,</span>
 <span>  scope <span class="op">=</span> <span class="st">"flow"</span>,</span>
 <span>  n <span class="op">=</span> <span class="fl">3</span>,</span>
@@ -177,7 +177,7 @@ if that’s actually true, and track the disagreement rate.</p>
 <span></span>
 <span><span class="co"># After human review, record judgments</span></span>
 <span><span class="co"># (In practice, this would come from a review form or clinical system)</span></span>
-<span><span class="fu">ont_record_audit</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_record_audit.html">ont_record_audit</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"ready_for_discharge"</span>,</span>
 <span>  scope <span class="op">=</span> <span class="st">"flow"</span>,</span>
 <span>  version <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -188,7 +188,7 @@ if that’s actually true, and track the disagreement rate.</p>
 <span>reviewer_id <span class="op">=</span> <span class="st">"dr_smith"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">ont_record_audit</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_record_audit.html">ont_record_audit</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"ready_for_discharge"</span>,</span>
 <span>  scope <span class="op">=</span> <span class="st">"flow"</span>,</span>
 <span>  version <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -200,7 +200,7 @@ if that’s actually true, and track the disagreement rate.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check audit summary</span></span>
-<span><span class="fu">ont_audit_summary</span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_audit_summary.html">ont_audit_summary</a></span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ── Audit Summary: ready_for_discharge@flow v1 ───────────────────────────</span></span>
 <span><span class="co">#&gt; ℹ Total audits: 2</span></span>
 <span><span class="co">#&gt; ℹ Agreements: 1 (50%)</span></span>
@@ -212,7 +212,7 @@ if that’s actually true, and track the disagreement rate.</p>
 <p>With enough audit data, drift becomes detectable:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check for drift (threshold-based)</span></span>
-<span><span class="fu">ont_detect_drift</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_detect_drift.html">ont_detect_drift</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"ready_for_discharge"</span>,</span>
 <span>  scope <span class="op">=</span> <span class="st">"flow"</span>,</span>
 <span>  threshold <span class="op">=</span> <span class="fl">0.15</span>,      <span class="co"># Alert if &gt;15% disagreement</span></span>
@@ -221,7 +221,7 @@ if that’s actually true, and track the disagreement rate.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Get drift status across all concepts</span></span>
-<span><span class="fu">ont_drift_status</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_drift_status.html">ont_drift_status</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ── Drift Status Summary ─────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; ✓ ready_for_discharge@flow v1: OK</span></span></code></pre></div>
 </div>
@@ -232,7 +232,7 @@ if that’s actually true, and track the disagreement rate.</p>
 governance:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Can't deprecate a version with open drift events</span></span>
-<span><span class="fu">ont_deprecate_version</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_deprecate_version.html">ont_deprecate_version</a></span><span class="op">(</span></span>
 <span>  <span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, <span class="fl">1</span>,</span>
 <span>  deprecated_by <span class="op">=</span> <span class="st">"data_team"</span>,</span>
 <span>  rationale <span class="op">=</span> <span class="st">"Replacing with v2"</span></span>
@@ -241,7 +241,7 @@ governance:</p>
 <span><span class="co">#&gt; ℹ Resolve drift events first or use `force = TRUE`.</span></span>
 <span></span>
 <span><span class="co"># Check policy before taking action</span></span>
-<span><span class="fu">ont_check_policy</span><span class="op">(</span><span class="st">"deprecate"</span>, <span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_check_policy.html">ont_check_policy</a></span><span class="op">(</span><span class="st">"deprecate"</span>, <span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✖ Action BLOCKED:</span></span>
 <span><span class="co">#&gt; • 1 open drift event(s) must be resolved first</span></span></code></pre></div>
 </div>
@@ -252,7 +252,7 @@ governance:</p>
 cases:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Add a refined version</span></span>
-<span><span class="fu">ont_add_version</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_add_version.html">ont_add_version</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"ready_for_discharge"</span>,</span>
 <span>  scope <span class="op">=</span> <span class="st">"flow"</span>,</span>
 <span>  version <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -262,7 +262,7 @@ cases:</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Compare versions</span></span>
-<span><span class="fu">ont_compare_versions</span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_compare_versions.html">ont_compare_versions</a></span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ── Comparison: ready_for_discharge@flow v1 vs v2 ────────────────────────</span></span>
 <span><span class="co">#&gt; ℹ Total objects: 5</span></span>
 <span><span class="co">#&gt; ℹ Agreement: 3 (60%)</span></span>

@@ -141,10 +141,10 @@ ont_drift_status()
 
 ### Top-level Entry Points
 
-| Function        | Description                                                   |
-|-----------------|---------------------------------------------------------------|
-| `ontology()`    | **Recommended**: Create an ontology object with `$` accessors |
-| `ont_connect()` | Connect using function-based API                              |
+| Function                                                                               | Description                                                   |
+|----------------------------------------------------------------------------------------|---------------------------------------------------------------|
+| [`ontology()`](https://cathalbyrnegit.github.io/ontologyR/reference/ontology.md)       | **Recommended**: Create an ontology object with `$` accessors |
+| [`ont_connect()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_connect.md) | Connect using function-based API                              |
 
 ### Object-based API (`ont$...`)
 
@@ -185,46 +185,75 @@ ont$disconnect()
 
 #### Connection
 
-- `ont_connect()` / `ont_disconnect()` — Manage database connection
-- `ont_status()` — View connection and content summary
+- [`ont_connect()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_connect.md)
+  /
+  [`ont_disconnect()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_disconnect.md)
+  — Manage database connection
+- [`ont_status()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_status.md)
+  — View connection and content summary
 
 ### Objects & Links
 
-- `ont_register_object()` — Map logical type to table
-- `ont_register_link()` — Define relationships
-- `ont_query_objects()` / `ont_query_linked()` — Query data
+- [`ont_register_object()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_register_object.md)
+  — Map logical type to table
+- [`ont_register_link()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_register_link.md)
+  — Define relationships
+- [`ont_query_objects()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_query_objects.md)
+  /
+  [`ont_query_linked()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_query_linked.md)
+  — Query data
 
 ### Concepts
 
-- `ont_define_concept()` — Create a new concept
-- `ont_add_version()` — Add versioned definition
-- `ont_activate_version()` / `ont_deprecate_version()` — Manage
-  lifecycle
-- `ont_evaluate()` — Apply concept to data
-- `ont_compare_versions()` — Compare definition outputs
+- [`ont_define_concept()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_define_concept.md)
+  — Create a new concept
+- [`ont_add_version()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_add_version.md)
+  — Add versioned definition
+- [`ont_activate_version()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_activate_version.md)
+  /
+  [`ont_deprecate_version()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_deprecate_version.md)
+  — Manage lifecycle
+- [`ont_evaluate()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_evaluate.md)
+  — Apply concept to data
+- [`ont_compare_versions()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_compare_versions.md)
+  — Compare definition outputs
 
 ### Auditing
 
-- `ont_sample_for_audit()` — Get random sample for review
-- `ont_record_audit()` — Record human judgment
-- `ont_audit_summary()` — View audit statistics
-- `ont_rolling_disagreement()` — Track disagreement over time
+- [`ont_sample_for_audit()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_sample_for_audit.md)
+  — Get random sample for review
+- [`ont_record_audit()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_record_audit.md)
+  — Record human judgment
+- [`ont_audit_summary()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_audit_summary.md)
+  — View audit statistics
+- [`ont_rolling_disagreement()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_rolling_disagreement.md)
+  — Track disagreement over time
 
 ### Drift Detection
 
-- `ont_check_drift()` — Test for drift
-- `ont_detect_drift()` — Check and create drift event
-- `ont_list_drift_events()` — View drift history
-- `ont_resolve_drift()` — Close drift event
-- `ont_drift_status()` — Overview across all concepts
+- [`ont_check_drift()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_check_drift.md)
+  — Test for drift
+- [`ont_detect_drift()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_detect_drift.md)
+  — Check and create drift event
+- [`ont_list_drift_events()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_drift_events.md)
+  — View drift history
+- [`ont_resolve_drift()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_resolve_drift.md)
+  — Close drift event
+- [`ont_drift_status()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_drift_status.md)
+  — Overview across all concepts
 
 ### Governance
 
-- `ont_log_governance()` — Record governance action
-- `ont_get_governance_log()` — View action history
-- `ont_check_policy()` — Validate proposed action
-- `ont_deprecation_impact()` — Analyze change impact
-- `ont_governance_report()` — Generate status report
+- [`ont_log_governance()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_log_governance.md)
+  — Record governance action
+- [`ont_get_governance_log()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_governance_log.md)
+  — View action history
+- [`ont_check_policy()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_check_policy.md)
+  — Validate proposed action
+- [`ont_deprecation_impact()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_deprecation_impact.md)
+  — Analyze change impact
+- [`ont_governance_report()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_governance_report.md)
+  — Generate status report
 
 ## Design Principles
 
@@ -276,12 +305,12 @@ views with nice printing - Both APIs use the same tables
 
 ### When to use which
 
-| Situation               | Recommendation                     |
-|-------------------------|------------------------------------|
-| Interactive exploration | `ont <- ontology(); ont$concepts`  |
-| Scripts and packages    | `ont_connect(); ont_evaluate(...)` |
-| Building pipelines      | Function-based (explicit control)  |
-| Teaching / demos        | Object-based (less boilerplate)    |
+| Situation               | Recommendation                                                                                            |
+|-------------------------|-----------------------------------------------------------------------------------------------------------|
+| Interactive exploration | `ont <- ontology(); ont$concepts`                                                                         |
+| Scripts and packages    | [`ont_connect(); ont_evaluate(...)`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_connect.md) |
+| Building pipelines      | Function-based (explicit control)                                                                         |
+| Teaching / demos        | Object-based (less boilerplate)                                                                           |
 
 ## Related Work
 

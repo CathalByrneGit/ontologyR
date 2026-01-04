@@ -100,7 +100,7 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/CathalByrneGit/ontologyR" class="external-link">ontologyR</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Create ontology object</span></span>
-<span><span class="va">ont</span> <span class="op">&lt;-</span> <span class="fu">ontology</span><span class="op">(</span><span class="st">":memory:"</span><span class="op">)</span></span>
+<span><span class="va">ont</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ontology.html">ontology</a></span><span class="op">(</span><span class="st">":memory:"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Register and define</span></span>
 <span><span class="va">ont</span><span class="op">$</span><span class="fu">register_object</span><span class="op">(</span><span class="st">"Encounter"</span>, <span class="st">"encounters"</span>, <span class="st">"encounter_id"</span><span class="op">)</span></span>
@@ -132,20 +132,20 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/CathalByrneGit/ontologyR" class="external-link">ontologyR</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Connect to ontology database</span></span>
-<span><span class="fu">ont_connect</span><span class="op">(</span><span class="st">":memory:"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/ont_connect.html">ont_connect</a></span><span class="op">(</span><span class="st">":memory:"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Register object type (maps logical name to physical table)</span></span>
-<span><span class="fu">ont_register_object</span><span class="op">(</span><span class="st">"Encounter"</span>, <span class="st">"encounters"</span>, <span class="st">"encounter_id"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/ont_register_object.html">ont_register_object</a></span><span class="op">(</span><span class="st">"Encounter"</span>, <span class="st">"encounters"</span>, <span class="st">"encounter_id"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Define a concept</span></span>
-<span><span class="fu">ont_define_concept</span><span class="op">(</span></span>
+<span><span class="fu"><a href="reference/ont_define_concept.html">ont_define_concept</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"ready_for_discharge"</span>,</span>
 <span>  object_type <span class="op">=</span> <span class="st">"Encounter"</span>,</span>
 <span>  description <span class="op">=</span> <span class="st">"Patient is ready to leave hospital"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Add a versioned definition</span></span>
-<span><span class="fu">ont_add_version</span><span class="op">(</span></span>
+<span><span class="fu"><a href="reference/ont_add_version.html">ont_add_version</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"ready_for_discharge"</span>,</span>
 <span>  scope <span class="op">=</span> <span class="st">"flow"</span>,</span>
 <span>  version <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -155,13 +155,13 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Evaluate the concept</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">ont_evaluate</span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ont_evaluate.html">ont_evaluate</a></span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Sample for audit</span></span>
-<span><span class="va">sample</span> <span class="op">&lt;-</span> <span class="fu">ont_sample_for_audit</span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, n <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
+<span><span class="va">sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ont_sample_for_audit.html">ont_sample_for_audit</a></span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, n <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Record human judgment</span></span>
-<span><span class="fu">ont_record_audit</span><span class="op">(</span></span>
+<span><span class="fu"><a href="reference/ont_record_audit.html">ont_record_audit</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"ready_for_discharge"</span>,</span>
 <span>  scope <span class="op">=</span> <span class="st">"flow"</span>, version <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  object_key <span class="op">=</span> <span class="st">"E123"</span>,</span>
@@ -171,10 +171,10 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check for drift</span></span>
-<span><span class="fu">ont_detect_drift</span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, threshold <span class="op">=</span> <span class="fl">0.15</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/ont_detect_drift.html">ont_detect_drift</a></span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, threshold <span class="op">=</span> <span class="fl">0.15</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># View governance status</span></span>
-<span><span class="fu">ont_drift_status</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/ont_drift_status.html">ont_drift_status</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -234,12 +234,12 @@
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>ontology()</code></td>
+<td><code><a href="reference/ontology.html">ontology()</a></code></td>
 <td>
 <strong>Recommended</strong>: Create an ontology object with <code>$</code> accessors</td>
 </tr>
 <tr class="even">
-<td><code>ont_connect()</code></td>
+<td><code><a href="reference/ont_connect.html">ont_connect()</a></code></td>
 <td>Connect using function-based API</td>
 </tr>
 </tbody>
@@ -249,7 +249,7 @@
 <h3 id="object-based-api-ont">Object-based API (<code>ont$...</code>)<a class="anchor" aria-label="anchor" href="#object-based-api-ont"></a>
 </h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ont</span> <span class="op">&lt;-</span> <span class="fu">ontology</span><span class="op">(</span><span class="st">"path/to/db.duckdb"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">ont</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ontology.html">ontology</a></span><span class="op">(</span><span class="st">"path/to/db.duckdb"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Exploration (returns S3 objects)</span></span>
 <span><span class="va">ont</span><span class="op">$</span><span class="va">concepts</span>                           <span class="co"># All concepts</span></span>
@@ -288,9 +288,9 @@
 </h4>
 <ul>
 <li>
-<code>ont_connect()</code> / <code>ont_disconnect()</code> — Manage database connection</li>
+<code><a href="reference/ont_connect.html">ont_connect()</a></code> / <code><a href="reference/ont_disconnect.html">ont_disconnect()</a></code> — Manage database connection</li>
 <li>
-<code>ont_status()</code> — View connection and content summary</li>
+<code><a href="reference/ont_status.html">ont_status()</a></code> — View connection and content summary</li>
 </ul>
 </div>
 </div>
@@ -299,11 +299,11 @@
 </h3>
 <ul>
 <li>
-<code>ont_register_object()</code> — Map logical type to table</li>
+<code><a href="reference/ont_register_object.html">ont_register_object()</a></code> — Map logical type to table</li>
 <li>
-<code>ont_register_link()</code> — Define relationships</li>
+<code><a href="reference/ont_register_link.html">ont_register_link()</a></code> — Define relationships</li>
 <li>
-<code>ont_query_objects()</code> / <code>ont_query_linked()</code> — Query data</li>
+<code><a href="reference/ont_query_objects.html">ont_query_objects()</a></code> / <code><a href="reference/ont_query_linked.html">ont_query_linked()</a></code> — Query data</li>
 </ul>
 </div>
 <div class="section level3">
@@ -311,15 +311,15 @@
 </h3>
 <ul>
 <li>
-<code>ont_define_concept()</code> — Create a new concept</li>
+<code><a href="reference/ont_define_concept.html">ont_define_concept()</a></code> — Create a new concept</li>
 <li>
-<code>ont_add_version()</code> — Add versioned definition</li>
+<code><a href="reference/ont_add_version.html">ont_add_version()</a></code> — Add versioned definition</li>
 <li>
-<code>ont_activate_version()</code> / <code>ont_deprecate_version()</code> — Manage lifecycle</li>
+<code><a href="reference/ont_activate_version.html">ont_activate_version()</a></code> / <code><a href="reference/ont_deprecate_version.html">ont_deprecate_version()</a></code> — Manage lifecycle</li>
 <li>
-<code>ont_evaluate()</code> — Apply concept to data</li>
+<code><a href="reference/ont_evaluate.html">ont_evaluate()</a></code> — Apply concept to data</li>
 <li>
-<code>ont_compare_versions()</code> — Compare definition outputs</li>
+<code><a href="reference/ont_compare_versions.html">ont_compare_versions()</a></code> — Compare definition outputs</li>
 </ul>
 </div>
 <div class="section level3">
@@ -327,13 +327,13 @@
 </h3>
 <ul>
 <li>
-<code>ont_sample_for_audit()</code> — Get random sample for review</li>
+<code><a href="reference/ont_sample_for_audit.html">ont_sample_for_audit()</a></code> — Get random sample for review</li>
 <li>
-<code>ont_record_audit()</code> — Record human judgment</li>
+<code><a href="reference/ont_record_audit.html">ont_record_audit()</a></code> — Record human judgment</li>
 <li>
-<code>ont_audit_summary()</code> — View audit statistics</li>
+<code><a href="reference/ont_audit_summary.html">ont_audit_summary()</a></code> — View audit statistics</li>
 <li>
-<code>ont_rolling_disagreement()</code> — Track disagreement over time</li>
+<code><a href="reference/ont_rolling_disagreement.html">ont_rolling_disagreement()</a></code> — Track disagreement over time</li>
 </ul>
 </div>
 <div class="section level3">
@@ -341,15 +341,15 @@
 </h3>
 <ul>
 <li>
-<code>ont_check_drift()</code> — Test for drift</li>
+<code><a href="reference/ont_check_drift.html">ont_check_drift()</a></code> — Test for drift</li>
 <li>
-<code>ont_detect_drift()</code> — Check and create drift event</li>
+<code><a href="reference/ont_detect_drift.html">ont_detect_drift()</a></code> — Check and create drift event</li>
 <li>
-<code>ont_list_drift_events()</code> — View drift history</li>
+<code><a href="reference/ont_list_drift_events.html">ont_list_drift_events()</a></code> — View drift history</li>
 <li>
-<code>ont_resolve_drift()</code> — Close drift event</li>
+<code><a href="reference/ont_resolve_drift.html">ont_resolve_drift()</a></code> — Close drift event</li>
 <li>
-<code>ont_drift_status()</code> — Overview across all concepts</li>
+<code><a href="reference/ont_drift_status.html">ont_drift_status()</a></code> — Overview across all concepts</li>
 </ul>
 </div>
 <div class="section level3">
@@ -357,15 +357,15 @@
 </h3>
 <ul>
 <li>
-<code>ont_log_governance()</code> — Record governance action</li>
+<code><a href="reference/ont_log_governance.html">ont_log_governance()</a></code> — Record governance action</li>
 <li>
-<code>ont_get_governance_log()</code> — View action history</li>
+<code><a href="reference/ont_get_governance_log.html">ont_get_governance_log()</a></code> — View action history</li>
 <li>
-<code>ont_check_policy()</code> — Validate proposed action</li>
+<code><a href="reference/ont_check_policy.html">ont_check_policy()</a></code> — Validate proposed action</li>
 <li>
-<code>ont_deprecation_impact()</code> — Analyze change impact</li>
+<code><a href="reference/ont_deprecation_impact.html">ont_deprecation_impact()</a></code> — Analyze change impact</li>
 <li>
-<code>ont_governance_report()</code> — Generate status report</li>
+<code><a href="reference/ont_governance_report.html">ont_governance_report()</a></code> — Generate status report</li>
 </ul>
 </div>
 </div>
@@ -453,7 +453,7 @@
 </tr>
 <tr class="even">
 <td>Scripts and packages</td>
-<td><code>ont_connect(); ont_evaluate(...)</code></td>
+<td><code><a href="reference/ont_connect.html">ont_connect(); ont_evaluate(...)</a></code></td>
 </tr>
 <tr class="odd">
 <td>Building pipelines</td>
@@ -481,7 +481,7 @@
 <span><span class="fu">get_ancestors</span><span class="op">(</span><span class="va">hpo</span>, <span class="st">"HP:0001250"</span><span class="op">)</span>  <span class="co"># Returns parent terms</span></span>
 <span></span>
 <span><span class="co"># ontologyR: versioned definitions with governance</span></span>
-<span><span class="va">ont</span> <span class="op">&lt;-</span> <span class="fu">ontology</span><span class="op">(</span><span class="st">"metrics.duckdb"</span><span class="op">)</span></span>
+<span><span class="va">ont</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ontology.html">ontology</a></span><span class="op">(</span><span class="st">"metrics.duckdb"</span><span class="op">)</span></span>
 <span><span class="va">ont</span><span class="op">$</span><span class="va">concepts</span><span class="op">$</span><span class="va">ready_for_discharge</span><span class="op">$</span><span class="va">flow</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">sql_expr</span>  <span class="co"># "NOT planned_intervention"</span></span>
 <span><span class="va">ont</span><span class="op">$</span><span class="va">concepts</span><span class="op">$</span><span class="va">ready_for_discharge</span><span class="op">$</span><span class="va">flow</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">audit_summary</span>  <span class="co"># Drift stats</span></span></code></pre></div>
 <table class="table">
