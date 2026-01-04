@@ -1,0 +1,423 @@
+# What is an Ontology? A Plain-English Guide
+
+## The recipe book analogy
+
+Imagine you run a chain of bakeries. Every morning, bakers across your
+shops need to decide: **is this loaf of bread “ready to sell”?**
+
+That seems simple. But what does “ready to sell” actually mean?
+
+- Does it mean “out of the oven”?
+- Does it mean “cooled down”?
+- Does it mean “cooled down AND sliced AND bagged”?
+- Does it mean “passed quality check”?
+
+Each of these is a **definition**. And depending on which one you
+choose, your “ready to sell” count will be completely different — even
+though the bread is exactly the same.
+
+This is what an **ontology** is: a formal agreement about what words
+mean when applied to data.
+
+> **An ontology is a recipe book for definitions** — it tells everyone
+> how to consistently classify things so that when someone says “ready
+> to sell”, everyone means the same thing.
+
+------------------------------------------------------------------------
+
+## Why definitions matter more than data
+
+Most people think data problems come from **bad data**: missing values,
+typos, broken systems.
+
+But often the bigger problem is **bad definitions**.
+
+Think of it like this: you could have a perfectly accurate thermometer,
+but if half your team thinks “hot” means “above 20°C” and the other half
+thinks it means “above 30°C”, you’ll have endless arguments — not
+because the thermometer is wrong, but because you never agreed on what
+“hot” means.
+
+**ontologyR exists because definitions need to be:**
+
+1.  **Written down** (not just assumed)
+2.  **Versioned** (so you can see how they changed)
+3.  **Tested** (to check if they still match reality)
+4.  **Governed** (so changes are deliberate, not accidental)
+
+------------------------------------------------------------------------
+
+## The building blocks
+
+Let’s walk through the key concepts in ontologyR, using our bakery
+example.
+
+### Object Types: The things you’re classifying
+
+An **object type** is the kind of thing you’re making decisions about.
+
+In our bakery: - Each **loaf of bread** is an object - The object type
+is “Loaf”
+
+In a hospital: - Each **patient visit** is an object  
+- The object type is “Encounter”
+
+In a business: - Each **customer** is an object - The object type is
+“Customer”
+
+> **Think of object types like nouns** — they’re the things in your
+> world that you need to classify.
+
+``` r
+# Tell ontologyR about your "things"
+ont$register_object(
+  object_type = "Loaf",
+  table_name = "bakery_loaves",
+  pk_column = "loaf_id"
+)
+```
+
+------------------------------------------------------------------------
+
+### Concepts: The categories you care about
+
+A **concept** is a meaningful category you want to assign to objects.
+
+In our bakery: - “Ready to sell” - “Needs discount” (end of day) -
+“Premium quality”
+
+In a hospital: - “Ready for discharge” - “At risk of readmission” -
+“Medically optimised”
+
+> **Think of concepts like adjectives** — they describe a state or
+> quality that an object might have (or not have).
+
+``` r
+# Define a concept (but don't say HOW to measure it yet)
+ont$define_concept(
+  concept_id = "ready_to_sell",
+  object_type = "Loaf",
+  description = "Loaf is ready for customer purchase"
+)
+```
+
+------------------------------------------------------------------------
+
+### Versions: The specific rules
+
+Here’s where it gets interesting. A concept like “ready to sell” could
+be measured in different ways:
+
+**Version 1** (simple): \> “A loaf is ready to sell if it’s out of the
+oven”
+
+**Version 2** (stricter): \> “A loaf is ready to sell if it’s out of the
+oven AND cooled below 30°C”
+
+**Version 3** (strictest): \> “A loaf is ready to sell if it’s cooled
+AND bagged AND passed quality check”
+
+Each of these is a **version** of the same concept. They’re all trying
+to measure “ready to sell”, but they do it differently.
+
+> **Think of versions like drafts of a recipe** — you might refine the
+> recipe over time as you learn what works, but you keep the old
+> versions so you can compare.
+
+``` r
+# Version 1: simple rule
+ont$add_version(
+  concept_id = "ready_to_sell",
+  scope = "operations",
+  version = 1,
+  sql_expr = "out_of_oven = TRUE",
+  rationale = "Initial simple definition"
+)
+
+# Version 2: refined rule
+ont$add_version(
+  concept_id = "ready_to_sell",
+  scope = "operations",
+  version = 2,
+ sql_expr = "out_of_oven = TRUE AND temperature < 30",
+  rationale = "Added temperature requirement after customer complaints"
+)
+```
+
+------------------------------------------------------------------------
+
+### Scopes: Different rules for different purposes
+
+Sometimes the same concept needs different definitions for different
+purposes.
+
+Consider “ready to sell”:
+
+- **Operations team** might use: “out of oven and cooled” (They need to
+  know when to move loaves to the shelf)
+
+- **Finance team** might use: “out of oven and cooled and bagged” (They
+  only count revenue when it’s actually sellable)
+
+- **Quality team** might use: “passed inspection” (They care about the
+  quality check, not the physical state)
+
+These are all valid definitions of “ready to sell” — they’re just for
+different **scopes** (different contexts or purposes).
+
+> **Think of scopes like different departments reading the same recipe
+> book** — the kitchen version has different details than the health
+> inspector’s version, even though they’re about the same dish.
+
+``` r
+# Operations scope
+ont$add_version("ready_to_sell", scope = "operations", version = 1,
+  sql_expr = "out_of_oven AND temperature < 30")
+
+# Finance scope  
+ont$add_version("ready_to_sell", scope = "finance", version = 1,
+  sql_expr = "out_of_oven AND temperature < 30 AND bagged")
+
+# Quality scope
+ont$add_version("ready_to_sell", scope = "quality", version = 1,
+  sql_expr = "passed_inspection")
+```
+
+------------------------------------------------------------------------
+
+## The Goodhart problem: When definitions go wrong
+
+Here’s where things get tricky.
+
+Imagine your bakery starts measuring performance by “number of loaves
+ready to sell by 9am”. And you define “ready to sell” as “out of the
+oven”.
+
+What happens?
+
+Bakers figure out that if they just get loaves out of the oven faster —
+even if they’re not quite done — the numbers look better. The loaves are
+technically “ready to sell” by your definition, but customers complain
+they’re doughy.
+
+**The definition hasn’t changed. But it stopped measuring what you
+actually cared about.**
+
+This is called **Goodhart’s Law**:
+
+> *“When a measure becomes a target, it ceases to be a good measure.”*
+
+Or more simply:
+
+> **Once people know how they’re being measured, they optimise for the
+> measurement — not the thing you actually wanted.**
+
+This is why ontologyR exists. Definitions **drift** away from reality,
+and you need a way to detect that.
+
+------------------------------------------------------------------------
+
+## Auditing: Checking if definitions still work
+
+How do you know if your definition is still measuring what you intended?
+
+**You test it.**
+
+In our bakery, you might:
+
+1.  Pick 20 loaves that the system says are “ready to sell”
+2.  Have an experienced baker look at each one
+3.  Ask: “Would you actually put this on the shelf right now?”
+4.  Count how often the baker disagrees with the system
+
+If the system says “ready” but the baker says “not ready” 30% of the
+time — your definition has a problem.
+
+> **Think of auditing like taste-testing your recipes** — you don’t just
+> trust that following the recipe will work, you actually try the result
+> and see if it’s good.
+
+``` r
+# Sample 20 loaves the system says are "ready"
+sample <- ont$sample("ready_to_sell", "operations", n = 20)
+
+# After human review, record what the baker said
+ont$record_audit(
+  concept_id = "ready_to_sell",
+  scope = "operations",
+  version = 1,
+  object_key = "LOAF_042",
+  system_value = TRUE,        # System said "ready"
+  reviewer_value = FALSE,     # Baker said "not ready"
+  reviewer_id = "mary_baker",
+  notes = "Still too warm, needs 5 more minutes"
+)
+```
+
+------------------------------------------------------------------------
+
+## Drift detection: Catching problems early
+
+If you audit regularly, you can catch **drift** — the gradual divergence
+between what your definition measures and what you actually care about.
+
+Imagine tracking your audit results over time:
+
+| Week | Audits | Disagreements | Rate |
+|------|--------|---------------|------|
+| 1    | 20     | 2             | 10%  |
+| 2    | 20     | 3             | 15%  |
+| 3    | 20     | 5             | 25%  |
+| 4    | 20     | 8             | 40%  |
+
+Something changed! Maybe a new oven has different timing. Maybe there’s
+pressure to hit targets. Maybe the recipe changed. Whatever it is, your
+definition is no longer matching reality.
+
+> **Think of drift detection like a smoke alarm** — it doesn’t tell you
+> what’s burning, but it tells you something needs attention before the
+> whole kitchen is on fire.
+
+``` r
+# Check for drift
+ont$check_drift("ready_to_sell", "operations", 
+  threshold = 0.15,  # Alert if >15% disagreement
+  min_audits = 20    # Need at least 20 audits
+)
+#> DRIFT DETECTED: Disagreement rate 40% exceeds threshold 15%
+```
+
+------------------------------------------------------------------------
+
+## Governance: Making changes deliberately
+
+When you detect drift, you have choices:
+
+1.  **Fix the definition** — create a new version that better captures
+    reality
+2.  **Fix the process** — address why the definition stopped working
+3.  **Accept it** — decide the drift is okay for your purposes
+
+Whatever you choose, ontologyR makes it **deliberate and documented**.
+
+> **Think of governance like a change log for your recipes** — anyone
+> can propose a change, but it gets reviewed, approved, and recorded so
+> you know why things are the way they are.
+
+``` r
+# Can't just delete a drifting definition — need to resolve the drift first
+ont$deprecate("ready_to_sell", "operations", version = 1,
+  deprecated_by = "head_baker")
+#> Error: Cannot deprecate - 1 open drift event(s) exist.
+#> Resolve drift events first or use force = TRUE.
+
+# Resolve the drift with an explanation
+ont$resolve_drift(
+  drift_id = "DRIFT-20250104-abc123",
+  resolution = "Created v2 with temperature check after oven upgrade",
+  resolved_by = "head_baker"
+)
+
+# Now you can deprecate v1 and activate v2
+ont$activate("ready_to_sell", "operations", version = 2,
+  approved_by = "head_baker")
+```
+
+------------------------------------------------------------------------
+
+## Putting it all together
+
+Here’s the full picture:
+
+    ┌─────────────────────────────────────────────────────────────┐
+    │                         ONTOLOGY                            │
+    │                    "The Recipe Book"                        │
+    ├─────────────────────────────────────────────────────────────┤
+    │                                                             │
+    │  OBJECT TYPES (nouns)          CONCEPTS (adjectives)        │
+    │  ┌─────────────────┐          ┌─────────────────────┐       │
+    │  │ Loaf            │──────────│ ready_to_sell       │       │
+    │  │ Customer        │          │ premium_quality     │       │
+    │  │ Order           │          │ needs_discount      │       │
+    │  └─────────────────┘          └──────────┬──────────┘       │
+    │                                          │                  │
+    │                               ┌──────────┴──────────┐       │
+    │                               │                     │       │
+    │                          SCOPES                     │       │
+    │                    (different contexts)             │       │
+    │                               │                     │       │
+    │               ┌───────────────┼───────────────┐     │       │
+    │               ▼               ▼               ▼     │       │
+    │         operations       finance         quality    │       │
+    │               │               │               │     │       │
+    │          VERSIONS        VERSIONS        VERSIONS   │       │
+    │         (the rules)     (the rules)     (the rules) │       │
+    │           v1, v2          v1              v1, v2    │       │
+    │                                                     │       │
+    └─────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+                        ┌─────────────────┐
+                        │    AUDITING     │
+                        │  "Taste tests"  │
+                        └────────┬────────┘
+                                 │
+                                 ▼
+                        ┌─────────────────┐
+                        │ DRIFT DETECTION │
+                        │  "Smoke alarm"  │
+                        └────────┬────────┘
+                                 │
+                                 ▼
+                        ┌─────────────────┐
+                        │   GOVERNANCE    │
+                        │  "Change log"   │
+                        └─────────────────┘
+
+------------------------------------------------------------------------
+
+## The key insight
+
+Here’s what makes ontologyR different from just having documentation:
+
+> **Definitions should be treated like scientific hypotheses, not like
+> laws.**
+
+A hypothesis is something you: - State clearly - Test against reality -
+Update when evidence shows it’s wrong
+
+A law is something you: - Declare from authority - Enforce compliance
+with - Defend even when reality disagrees
+
+Most organisations treat definitions like laws. ontologyR helps you
+treat them like hypotheses — which means they actually stay connected to
+reality.
+
+------------------------------------------------------------------------
+
+## Quick reference: The vocabulary
+
+| Term            | Plain English                              | Analogy                            |
+|-----------------|--------------------------------------------|------------------------------------|
+| **Object Type** | The kind of thing you’re classifying       | Nouns (loaf, customer, patient)    |
+| **Concept**     | A category an object might belong to       | Adjectives (ready, premium, risky) |
+| **Version**     | A specific rule for deciding the category  | Draft of a recipe                  |
+| **Scope**       | The context where a rule applies           | Different departments              |
+| **Audit**       | A human check of whether the rule is right | Taste-testing                      |
+| **Drift**       | When a rule stops matching reality         | Recipe not working anymore         |
+| **Governance**  | Deliberate management of rule changes      | Change log                         |
+
+------------------------------------------------------------------------
+
+## Next steps
+
+Now that you understand the concepts:
+
+- See
+  [`vignette("introduction")`](https://cathalbyrnegit.github.io/ontologyR/articles/introduction.md)
+  for code examples
+- See `vignette("drift-detection")` for details on detecting problems
+- See `vignette("governance")` for managing definition changes
+
+Remember: **the goal isn’t perfect definitions — it’s definitions you
+can test, improve, and trust.**
