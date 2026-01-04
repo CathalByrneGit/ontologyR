@@ -31,5 +31,5 @@ Suggests:
     zoo
 Config/testthat/edition: 3
 VignetteBuilder: knitr
-URL: https://github.com/CathalByrneGit/ontologyR
+URL: https://github.com/CathalByrneGit/ontologyR, https://cathalbyrnegit.github.io/ontologyR/
 BugReports: https://github.com/CathalByrneGit/ontologyR/issues
