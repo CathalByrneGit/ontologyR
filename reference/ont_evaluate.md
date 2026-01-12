@@ -67,24 +67,47 @@ DBI::dbWriteTable(ont_get_connection(), "encounters", tibble::tibble(
     arrangements_confirmed = c(FALSE, TRUE, FALSE)
 ))
 ont_register_object("Encounter", "encounters", "encounter_id")
-#> Error in .local(conn, statement, ...): Bind parameter values need to have the same length
-#> ℹ Context: rapi_bind
+#> ✔ Registered object type "Encounter" -> "encounters"
 ont_define_concept("ready_for_discharge", "Encounter")
-#> Error in ont_get_object(object_type, con): Unknown object type: "Encounter"
+#> ✔ Defined concept "ready_for_discharge" for object type "Encounter"
 ont_add_version("ready_for_discharge", "flow", 1,
     sql_expr = "NOT planned_intervention_24h",
     status = "active")
-#> Error in ont_get_concept(concept_id, con): Unknown concept: "ready_for_discharge"
+#> ✔ Added version 1 for "ready_for_discharge"@flow [active]
 
 # Evaluate
 result <- ont_evaluate("ready_for_discharge", "flow", 1)
-#> Error in ont_get_version(concept_id, scope, version, con): Unknown version: "ready_for_discharge"@flow v1
 print(result)
-#> Error: object 'result' not found
+#> # A tibble: 3 × 4
+#>   encounter_id planned_intervention_24h arrangements_confirmed concept_value
+#>   <chr>        <lgl>                    <lgl>                  <lgl>        
+#> 1 E1           TRUE                     FALSE                  FALSE        
+#> 2 E2           FALSE                    TRUE                   TRUE         
+#> 3 E3           FALSE                    FALSE                  TRUE         
 
 # Check provenance
 attr(result, "ontology_provenance")
-#> Error: object 'result' not found
+#> $concept_id
+#> [1] "ready_for_discharge"
+#> 
+#> $scope
+#> [1] "flow"
+#> 
+#> $version
+#> [1] 1
+#> 
+#> $sql_expr
+#> [1] "NOT planned_intervention_24h"
+#> 
+#> $status
+#> [1] "active"
+#> 
+#> $object_type
+#> [1] "Encounter"
+#> 
+#> $evaluated_at
+#> [1] "2026-01-12 20:06:10 UTC"
+#> 
 
 ont_disconnect()
 #> ✔ Disconnected from ontology database.

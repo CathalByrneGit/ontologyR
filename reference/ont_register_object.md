@@ -68,14 +68,15 @@ ont_register_object(
     description = "A patient encounter or visit",
     owner_domain = "patient_flow"
 )
-#> Error in .local(conn, statement, ...): Bind parameter values need to have the same length
-#> ℹ Context: rapi_bind
+#> ✔ Registered object type "Encounter" -> "encounters"
 
 # List registered types
 ont_list_objects()
-#> # A tibble: 0 × 7
-#> # ℹ 7 variables: object_type <chr>, table_name <chr>, pk_column <chr>,
-#> #   description <chr>, owner_domain <chr>, created_at <dttm>, created_by <chr>
+#> # A tibble: 1 × 7
+#>   object_type table_name pk_column  description owner_domain created_at         
+#>   <chr>       <chr>      <chr>      <chr>       <chr>        <dttm>             
+#> 1 Encounter   encounters encounter… A patient … patient_flow 2026-01-12 20:06:13
+#> # ℹ 1 more variable: created_by <chr>
 
 ont_disconnect()
 #> ✔ Disconnected from ontology database.

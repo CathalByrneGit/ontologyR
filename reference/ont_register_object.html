@@ -114,14 +114,15 @@ table names.</p>
 <span class="r-in"><span>    description <span class="op">=</span> <span class="st">"A patient encounter or visit"</span>,</span></span>
 <span class="r-in"><span>    owner_domain <span class="op">=</span> <span class="st">"patient_flow"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in .local(conn, statement, ...):</span> Bind parameter values need to have the same length</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">ℹ</span> Context: rapi_bind</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Registered object type <span style="color: #0000BB;">"Encounter"</span> -&gt; <span style="color: #0000BB;">"encounters"</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># List registered types</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="ont_list_objects.html">ont_list_objects</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 0 × 7</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 7 variables: object_type &lt;chr&gt;, table_name &lt;chr&gt;, pk_column &lt;chr&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   description &lt;chr&gt;, owner_domain &lt;chr&gt;, created_at &lt;dttm&gt;, created_by &lt;chr&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   object_type table_name pk_column  description owner_domain created_at         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> Encounter   encounters encounter… A patient … patient_flow 2026-01-12 <span style="color: #949494;">20:06:13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 1 more variable: created_by &lt;chr&gt;</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="ont_disconnect.html">ont_disconnect</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Disconnected from ontology database.</span>

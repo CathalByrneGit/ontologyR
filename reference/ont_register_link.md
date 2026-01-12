@@ -86,11 +86,9 @@ ont_connect(":memory:")
 
 # Register object types first
 ont_register_object("Encounter", "encounters", "encounter_id")
-#> Error in .local(conn, statement, ...): Bind parameter values need to have the same length
-#> ℹ Context: rapi_bind
+#> ✔ Registered object type "Encounter" -> "encounters"
 ont_register_object("Patient", "patients", "patient_id")
-#> Error in .local(conn, statement, ...): Bind parameter values need to have the same length
-#> ℹ Context: rapi_bind
+#> ✔ Registered object type "Patient" -> "patients"
 
 # Register link between them
 ont_register_link(
@@ -102,7 +100,7 @@ ont_register_link(
     to_key = "patient_id",
     cardinality = "many-to-one"
 )
-#> Error in ont_get_object(from_object, con): Unknown object type: "Encounter"
+#> ✔ Registered link type "encounter_patient": Encounter -> Patient
 
 ont_disconnect()
 #> ✔ Disconnected from ontology database.

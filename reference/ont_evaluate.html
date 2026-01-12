@@ -109,24 +109,47 @@ Has "ontology_provenance" attribute with evaluation metadata.</p>
 <span class="r-in"><span>    arrangements_confirmed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="ont_register_object.html">ont_register_object</a></span><span class="op">(</span><span class="st">"Encounter"</span>, <span class="st">"encounters"</span>, <span class="st">"encounter_id"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in .local(conn, statement, ...):</span> Bind parameter values need to have the same length</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">ℹ</span> Context: rapi_bind</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Registered object type <span style="color: #0000BB;">"Encounter"</span> -&gt; <span style="color: #0000BB;">"encounters"</span></span>
 <span class="r-in"><span><span class="fu"><a href="ont_define_concept.html">ont_define_concept</a></span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"Encounter"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in ont_get_object(object_type, con):</span> Unknown object type: <span style="color: #0000BB;">"Encounter"</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Defined concept <span style="color: #0000BB;">"ready_for_discharge"</span> for object type <span style="color: #0000BB;">"Encounter"</span></span>
 <span class="r-in"><span><span class="fu"><a href="ont_add_version.html">ont_add_version</a></span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, <span class="fl">1</span>,</span></span>
 <span class="r-in"><span>    sql_expr <span class="op">=</span> <span class="st">"NOT planned_intervention_24h"</span>,</span></span>
 <span class="r-in"><span>    status <span class="op">=</span> <span class="st">"active"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in ont_get_concept(concept_id, con):</span> Unknown concept: <span style="color: #0000BB;">"ready_for_discharge"</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Added version 1 for <span style="color: #0000BB;">"ready_for_discharge"</span>@flow [active]</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Evaluate</span></span></span>
 <span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">ont_evaluate</span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"flow"</span>, <span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in ont_get_version(concept_id, scope, version, con):</span> Unknown version: <span style="color: #0000BB;">"ready_for_discharge"</span>@flow v1</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'result' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   encounter_id planned_intervention_24h arrangements_confirmed concept_value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> E1           TRUE                     FALSE                  FALSE        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> E2           FALSE                    TRUE                   TRUE         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> E3           FALSE                    FALSE                  TRUE         </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Check provenance</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">result</span>, <span class="st">"ontology_provenance"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'result' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $concept_id</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ready_for_discharge"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $scope</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "flow"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $version</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $sql_expr</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "NOT planned_intervention_24h"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $status</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "active"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $object_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Encounter"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $evaluated_at</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-01-12 20:06:10 UTC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="ont_disconnect.html">ont_disconnect</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Disconnected from ontology database.</span>

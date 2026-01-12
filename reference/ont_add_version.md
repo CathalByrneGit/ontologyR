@@ -82,10 +82,9 @@ ont_connect(":memory:")
 #> ! Schema file parsing failed, using inline creation: Extension Autoloading Error: An error occurred while trying to automatically install the required extension 'icu': Extension "/home/runner/.local/share/R/duckdb/extensions/v1.4.3/linux_amd64/icu.duckdb_extension" not found. Extension "icu" is an existing extension.  Install it first using "INSTALL icu". ℹ Context: rapi_prepare ℹ Error type: AUTOLOAD
 #> ✔ Connected to ontology database: ':memory:'
 ont_register_object("Encounter", "encounters", "encounter_id")
-#> Error in .local(conn, statement, ...): Bind parameter values need to have the same length
-#> ℹ Context: rapi_bind
+#> ✔ Registered object type "Encounter" -> "encounters"
 ont_define_concept("ready_for_discharge", "Encounter")
-#> Error in ont_get_object(object_type, con): Unknown object type: "Encounter"
+#> ✔ Defined concept "ready_for_discharge" for object type "Encounter"
 
 # Add version 1: simple proxy definition
 ont_add_version(
@@ -96,7 +95,7 @@ ont_add_version(
     status = "active",
     rationale = "Operational proxy: no planned interventions in next 24h"
 )
-#> Error in ont_get_concept(concept_id, con): Unknown concept: "ready_for_discharge"
+#> ✔ Added version 1 for "ready_for_discharge"@flow [active]
 
 # Add version 2: refined definition
 ont_add_version(
@@ -107,7 +106,7 @@ ont_add_version(
     status = "draft",
     rationale = "Added arrangements requirement based on audit findings"
 )
-#> Error in ont_get_concept(concept_id, con): Unknown concept: "ready_for_discharge"
+#> ✔ Added version 2 for "ready_for_discharge"@flow [draft]
 
 ont_disconnect()
 #> ✔ Disconnected from ontology database.
