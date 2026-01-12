@@ -64,7 +64,10 @@ ont_define_concept <- function(concept_id,
         INSERT INTO ont_concepts
         (concept_id, object_type, description, owner_domain, created_by, created_at)
         VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    ", params = list(concept_id, object_type, description, owner_domain, created_by))
+    ", params = list(
+        concept_id, object_type,
+        null_to_na(description), null_to_na(owner_domain), null_to_na(created_by)
+    ))
 
     cli::cli_alert_success(
         "Defined concept {.val {concept_id}} for object type {.val {object_type}}"
@@ -167,7 +170,7 @@ ont_add_version <- function(concept_id,
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     ", params = list(
         concept_id, scope, as.integer(version), sql_expr, status,
-        rationale, valid_from, valid_to, created_by
+        null_to_na(rationale), null_to_na(valid_from), null_to_na(valid_to), null_to_na(created_by)
     ))
 
     cli::cli_alert_success(

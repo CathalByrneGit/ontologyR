@@ -44,9 +44,9 @@ ont_log_governance <- function(action_type,
         (log_id, action_type, concept_id, scope, version, actor, action_at, rationale, evidence, blocked_by)
         VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)
     ", params = list(
-        log_id, action_type, concept_id, scope,
-        if (!is.null(version)) as.integer(version) else NULL,
-        actor, rationale, evidence, blocked_by
+        log_id, action_type, concept_id, null_to_na(scope),
+        if (!is.null(version)) as.integer(version) else NA_integer_,
+        actor, null_to_na(rationale), null_to_na(evidence), null_to_na(blocked_by)
     ))
 
     invisible(log_id)
@@ -134,8 +134,8 @@ ont_register_dashboard <- function(dashboard_id,
         (dashboard_id, dashboard_name, concept_id, scope, version, registered_at, registered_by)
         VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
     ", params = list(
-        dashboard_id, dashboard_name, concept_id, scope,
-        as.integer(version), registered_by
+        dashboard_id, null_to_na(dashboard_name), concept_id, scope,
+        as.integer(version), null_to_na(registered_by)
     ))
 
     cli::cli_alert_success(

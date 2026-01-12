@@ -65,7 +65,10 @@ ont_register_object <- function(object_type,
         INSERT OR REPLACE INTO ont_object_types
         (object_type, table_name, pk_column, description, owner_domain, created_by, created_at)
         VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    ", params = list(object_type, table_name, pk_column, description, owner_domain, created_by))
+    ", params = list(
+        object_type, table_name, pk_column,
+        null_to_na(description), null_to_na(owner_domain), null_to_na(created_by)
+    ))
 
     cli::cli_alert_success(
         "Registered object type {.val {object_type}} -> {.val {table_name}}"
@@ -189,7 +192,8 @@ ont_register_link <- function(link_type,
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     ", params = list(
         link_type, from_object, to_object, link_table, from_key, to_key,
-        valid_from_col, valid_to_col, cardinality, description, created_by
+        null_to_na(valid_from_col), null_to_na(valid_to_col), cardinality,
+        null_to_na(description), null_to_na(created_by)
     ))
 
     cli::cli_alert_success(

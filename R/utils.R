@@ -18,6 +18,20 @@ NULL
     if (is.null(x)) y else x
 }
 
+#' Convert NULL to NA for DBI binding
+#'
+#' DuckDB parameter binding requires all values to have length 1.
+#' This helper converts NULL to NA_character_ for text parameters.
+#'
+#' @param x Value that might be NULL.
+#'
+#' @return NA_character_ if x is NULL, otherwise x.
+#'
+#' @keywords internal
+null_to_na <- function(x) {
+    if (is.null(x)) NA_character_ else x
+}
+
 #' Generate a Unique ID
 #'
 #' Creates a unique identifier with optional prefix.
