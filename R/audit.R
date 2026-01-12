@@ -154,7 +154,7 @@ ont_record_audit <- function(concept_id,
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     ", params = list(
         audit_id, concept_id, scope, as.integer(version), object_key,
-        system_value, reviewer_value, reviewer_id, notes
+        system_value, reviewer_value, reviewer_id, null_to_na(notes)
     ))
 
     agreement <- system_value == reviewer_value
