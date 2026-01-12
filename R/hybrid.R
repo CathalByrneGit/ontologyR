@@ -26,7 +26,7 @@ NULL
 #' ont <- ontology(":memory:")
 #'
 #' # Register and define concepts
-#' ont$register_object("Encounter", "encounters", "encounter_id
+#' ont$register_object("Encounter", "encounters", "encounter_id")
 #' ont$define_concept("ready_for_discharge", "Encounter")
 #' ont$add_version("ready_for_discharge", "flow", 1, "NOT planned_intervention")
 #'

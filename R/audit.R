@@ -17,7 +17,6 @@ NULL
 #' @param where Character. Optional SQL WHERE clause to filter the sample
 #'   population (e.g., only sample from today's cases).
 #' @param concept_value Logical. If `TRUE` (default), only sample objects
-
 #'   where the concept evaluates to TRUE. Set to `FALSE` to sample
 #'   regardless of concept value, or `NA` to sample where concept is FALSE.
 #' @param seed Integer. Random seed for reproducibility.
