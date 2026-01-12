@@ -376,4 +376,74 @@ create_tables_inline <- function(con) {
             PRIMARY KEY (dashboard_id, concept_id, scope, version)
         )
     ")
+
+    # Observations
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_observations (
+            observation_id TEXT PRIMARY KEY,
+            concept_id TEXT NOT NULL,
+            scope TEXT NOT NULL,
+            version INTEGER NOT NULL,
+            observed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            observation_type TEXT NOT NULL DEFAULT 'snapshot',
+            total_objects INTEGER NOT NULL,
+            concept_true INTEGER NOT NULL,
+            concept_false INTEGER NOT NULL,
+            concept_null INTEGER DEFAULT 0,
+            prevalence_rate REAL,
+            filter_expr TEXT,
+            triggered_by TEXT,
+            observer_id TEXT,
+            notes TEXT
+        )
+    ")
+
+    # Observation details
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_observation_details (
+            observation_id TEXT NOT NULL,
+            object_key TEXT NOT NULL,
+            concept_value BOOLEAN,
+            PRIMARY KEY (observation_id, object_key)
+        )
+    ")
+
+    # Cohorts
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_cohorts (
+            cohort_id TEXT PRIMARY KEY,
+            cohort_name TEXT NOT NULL,
+            object_type TEXT NOT NULL,
+            definition_type TEXT NOT NULL DEFAULT 'sql',
+            sql_expr TEXT,
+            description TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT
+        )
+    ")
+
+    # Cohort members
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_cohort_members (
+            cohort_id TEXT NOT NULL,
+            object_key TEXT NOT NULL,
+            added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            added_by TEXT,
+            PRIMARY KEY (cohort_id, object_key)
+        )
+    ")
+
+    # Analysis runs
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_analysis_runs (
+            analysis_id TEXT PRIMARY KEY,
+            analysis_type TEXT NOT NULL,
+            concept_id TEXT NOT NULL,
+            scope TEXT,
+            parameters TEXT,
+            results_summary TEXT,
+            executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            executed_by TEXT
+        )
+    ")
 }

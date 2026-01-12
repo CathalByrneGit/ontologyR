@@ -189,7 +189,7 @@ WHERE cv.status = 'active'
 
 -- Drift summary per concept version
 CREATE VIEW IF NOT EXISTS ont_drift_summary AS
-SELECT 
+SELECT
     concept_id,
     scope,
     version,
@@ -201,3 +201,136 @@ SELECT
     MAX(audited_at) AS last_audit
 FROM ont_audits
 GROUP BY concept_id, scope, version;
+
+-- =============================================================================
+-- OBSERVATIONS & ANALYSIS
+-- =============================================================================
+-- Observations capture point-in-time snapshots of concept evaluations.
+-- Unlike audits (human vs system), observations are recorded facts about
+-- what the system evaluated at a specific moment.
+--
+-- This enables:
+--   - Trend analysis: How does concept prevalence change over time?
+--   - Version comparison: How do different versions evaluate the same data?
+--   - Cohort analysis: How do concept values differ across object groups?
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- OBSERVATIONS
+-- Aggregate snapshots of concept evaluations at a point in time.
+-- Each observation records summary statistics for a concept evaluation run.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_observations (
+    observation_id   TEXT PRIMARY KEY,
+    concept_id       TEXT NOT NULL,
+    scope            TEXT NOT NULL,
+    version          INTEGER NOT NULL,
+    observed_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    observation_type TEXT NOT NULL DEFAULT 'snapshot',  -- snapshot, scheduled, triggered
+
+    -- Aggregate statistics from the observation
+    total_objects    INTEGER NOT NULL,
+    concept_true     INTEGER NOT NULL,
+    concept_false    INTEGER NOT NULL,
+    concept_null     INTEGER DEFAULT 0,
+
+    -- Derived metrics (stored for query efficiency)
+    prevalence_rate  REAL,              -- concept_true / total_objects
+
+    -- Optional filter that was applied
+    filter_expr      TEXT,
+
+    -- Metadata
+    triggered_by     TEXT,              -- 'manual', 'schedule', 'drift_check', 'governance'
+    observer_id      TEXT,              -- Who/what initiated this observation
+    notes            TEXT,
+
+    FOREIGN KEY (concept_id, scope, version)
+        REFERENCES ont_concept_versions(concept_id, scope, version)
+);
+
+-- Index for time-series queries
+CREATE INDEX IF NOT EXISTS idx_observations_time
+    ON ont_observations(concept_id, scope, version, observed_at);
+
+-- -----------------------------------------------------------------------------
+-- OBSERVATION DETAILS (optional)
+-- Object-level details for observations where granular tracking is needed.
+-- Only populated when store_details = TRUE in ont_observe().
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_observation_details (
+    observation_id   TEXT NOT NULL,
+    object_key       TEXT NOT NULL,
+    concept_value    BOOLEAN,
+
+    PRIMARY KEY (observation_id, object_key),
+    FOREIGN KEY (observation_id) REFERENCES ont_observations(observation_id)
+);
+
+-- -----------------------------------------------------------------------------
+-- COHORTS
+-- Named groups of objects for comparative analysis.
+-- Cohorts can be defined by SQL expressions or explicit membership.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_cohorts (
+    cohort_id        TEXT PRIMARY KEY,
+    cohort_name      TEXT NOT NULL,
+    object_type      TEXT NOT NULL,
+    definition_type  TEXT NOT NULL DEFAULT 'sql',  -- 'sql' or 'explicit'
+    sql_expr         TEXT,               -- SQL WHERE clause for dynamic cohorts
+    description      TEXT,
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by       TEXT,
+
+    FOREIGN KEY (object_type) REFERENCES ont_object_types(object_type)
+);
+
+-- -----------------------------------------------------------------------------
+-- COHORT MEMBERS (for explicit cohorts)
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_cohort_members (
+    cohort_id        TEXT NOT NULL,
+    object_key       TEXT NOT NULL,
+    added_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    added_by         TEXT,
+
+    PRIMARY KEY (cohort_id, object_key),
+    FOREIGN KEY (cohort_id) REFERENCES ont_cohorts(cohort_id)
+);
+
+-- -----------------------------------------------------------------------------
+-- ANALYSIS RUNS
+-- Records of analysis executions for reproducibility and audit trail.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_analysis_runs (
+    analysis_id      TEXT PRIMARY KEY,
+    analysis_type    TEXT NOT NULL,      -- 'trend', 'cohort_compare', 'version_compare', 'distribution'
+    concept_id       TEXT NOT NULL,
+    scope            TEXT,
+    parameters       TEXT,               -- JSON: analysis parameters
+    results_summary  TEXT,               -- JSON: key findings
+    executed_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    executed_by      TEXT,
+
+    FOREIGN KEY (concept_id) REFERENCES ont_concepts(concept_id)
+);
+
+-- -----------------------------------------------------------------------------
+-- VIEWS: Analysis convenience views
+-- -----------------------------------------------------------------------------
+
+-- Observation time series for trend analysis
+CREATE VIEW IF NOT EXISTS ont_observation_trends AS
+SELECT
+    concept_id,
+    scope,
+    version,
+    DATE(observed_at) AS observation_date,
+    COUNT(*) AS observation_count,
+    AVG(prevalence_rate) AS avg_prevalence,
+    MIN(prevalence_rate) AS min_prevalence,
+    MAX(prevalence_rate) AS max_prevalence,
+    SUM(total_objects) AS total_objects_observed
+FROM ont_observations
+GROUP BY concept_id, scope, version, DATE(observed_at);
+
