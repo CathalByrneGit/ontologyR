@@ -273,9 +273,6 @@ ont$disconnect()
   — a plain-English guide with bakery analogies
 - [`vignette("introduction")`](https://cathalbyrnegit.github.io/ontologyR/articles/introduction.md)
   — Code examples and API walkthrough
-- `vignette("drift-detection")` — Details on detecting definition
-  problems
-- `vignette("governance")` — Managing definition changes
 
 ## Design Notes: Tables vs. Classes
 

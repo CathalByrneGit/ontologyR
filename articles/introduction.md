@@ -112,8 +112,7 @@ ont_record_audit(
   object_key = "E2",
   system_value = TRUE,
   reviewer_value = TRUE,  # Reviewer agrees
-
-reviewer_id = "dr_smith"
+  reviewer_id = "dr_smith"
 )
 
 ont_record_audit(
@@ -210,7 +209,6 @@ ont_compare_versions("ready_for_discharge", "flow", 1, 2)
 
 ## Next Steps
 
-- See `vignette("drift-detection")` for details on drift detection
-  algorithms
-- See `vignette("governance")` for governance policy configuration
-- See `vignette("integration")` for integrating with data pipelines
+- See
+  [`vignette("what-is-an-ontology")`](https://cathalbyrnegit.github.io/ontologyR/articles/what-is-an-ontology.md)
+  for a conceptual overview with analogies

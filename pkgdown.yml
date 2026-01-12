@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   introduction: introduction.html
   what-is-an-ontology: what-is-an-ontology.html
-last_built: 2026-01-04T22:49Z
+last_built: 2026-01-12T19:57Z
 urls:
   reference: https://cathalbyrnegit.github.io/ontologyR/reference
   article: https://cathalbyrnegit.github.io/ontologyR/articles

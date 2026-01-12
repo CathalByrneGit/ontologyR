@@ -139,7 +139,7 @@ ont$add_version(
   concept_id = "ready_to_sell",
   scope = "operations",
   version = 2,
- sql_expr = "out_of_oven = TRUE AND temperature < 30",
+  sql_expr = "out_of_oven = TRUE AND temperature < 30",
   rationale = "Added temperature requirement after customer complaints"
 )
 ```
@@ -415,9 +415,7 @@ Now that you understand the concepts:
 
 - See
   [`vignette("introduction")`](https://cathalbyrnegit.github.io/ontologyR/articles/introduction.md)
-  for code examples
-- See `vignette("drift-detection")` for details on detecting problems
-- See `vignette("governance")` for managing definition changes
+  for code examples and API walkthrough
 
 Remember: **the goal isn’t perfect definitions — it’s definitions you
 can test, improve, and trust.**
