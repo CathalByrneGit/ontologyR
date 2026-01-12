@@ -205,8 +205,8 @@ test_that("ontology link registration works", {
   )
 
   links <- ont$links
-  expect_equal(length(links), 1)
-  expect_true("patient_encounter" %in% names(links))
+  expect_equal(nrow(links), 1)
+  expect_true("patient_encounter" %in% links$link_type)
 
   ont_disconnect()
 })
