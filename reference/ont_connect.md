@@ -52,7 +52,7 @@ ont_status()
 #> ── Ontology Database Status ──
 #> 
 #> ℹ Path: my_ontology.duckdb
-#> ℹ Connected: [2026-01-12 20:36:05.664114]
+#> ℹ Connected: [2026-01-12 20:52:58.15872]
 #> ℹ Read-only: FALSE
 #> 
 #> ── Contents 
