@@ -16,8 +16,8 @@ Each of these is a **definition**. And depending on which one you
 choose, your “ready to sell” count will be completely different — even
 though the bread is exactly the same.
 
-This is what an **ontology** is: a formal agreement about what words
-mean when applied to data.
+This is what an **ontology** is: a formal, shared vocabulary + rules for
+how terms map onto data.
 
 > **An ontology is a recipe book for definitions** — it tells everyone
 > how to consistently classify things so that when someone says “ready

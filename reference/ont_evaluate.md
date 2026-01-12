@@ -106,7 +106,7 @@ attr(result, "ontology_provenance")
 #> [1] "Encounter"
 #> 
 #> $evaluated_at
-#> [1] "2026-01-12 20:52:59 UTC"
+#> [1] "2026-01-12 23:18:27 UTC"
 #> 
 
 ont_disconnect()
