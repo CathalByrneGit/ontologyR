@@ -142,7 +142,7 @@ ont$add_version(
   concept_id = "ready_to_sell",
   scope = "operations",
   version = 2,
- sql_expr = "out_of_oven = TRUE AND temperature < 30",
+  sql_expr = "out_of_oven = TRUE AND temperature < 30",
   rationale = "Added temperature requirement after customer complaints"
 )
 ```
@@ -396,8 +396,6 @@ Most organisations treat definitions like laws. ontologyR helps you treat them l
 
 Now that you understand the concepts:
 
-- See `vignette("introduction")` for code examples
-- See `vignette("drift-detection")` for details on detecting problems
-- See `vignette("governance")` for managing definition changes
+- See `vignette("introduction")` for code examples and API walkthrough
 
 Remember: **the goal isn't perfect definitions — it's definitions you can test, improve, and trust.**

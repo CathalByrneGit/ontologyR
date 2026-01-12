@@ -1,8 +1,8 @@
 test_that("connection works", {
   # Connect to in-memory database
   ont_connect(":memory:")
-  
-expect_true(!is.null(ont_get_connection()))
+
+  expect_true(!is.null(ont_get_connection()))
   
   status <- ont_status()
   expect_true(status$connected)

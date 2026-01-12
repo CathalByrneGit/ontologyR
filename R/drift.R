@@ -14,8 +14,7 @@ NULL
 #' @param scope Character. The scope.
 #' @param version Integer. The version. If `NULL`, uses active version.
 #' @param threshold Numeric. Disagreement rate threshold (0-1). Default 0.15.
-#' @param min_audits Integer
-#' . Minimum audits required before checking. Default 10.
+#' @param min_audits Integer. Minimum audits required before checking. Default 10.
 #' @param window_days Integer. Days to look back for recent audits. Default 30.
 #' @param con A DBI connection. If `NULL`, uses the active connection.
 #'

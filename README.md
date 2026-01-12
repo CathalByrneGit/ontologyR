@@ -223,8 +223,6 @@ ont$disconnect()
 
 - **New to ontologies?** Start with `vignette("what-is-an-ontology")` — a plain-English guide with bakery analogies
 - `vignette("introduction")` — Code examples and API walkthrough
-- `vignette("drift-detection")` — Details on detecting definition problems
-- `vignette("governance")` — Managing definition changes
 
 ## Design Notes: Tables vs. Classes
 
