@@ -105,8 +105,14 @@ attr(result, "ontology_provenance")
 #> $object_type
 #> [1] "Encounter"
 #> 
+#> $pk_column
+#> [1] "encounter_id"
+#> 
+#> $table_name
+#> [1] "encounters"
+#> 
 #> $evaluated_at
-#> [1] "2026-01-12 23:18:27 UTC"
+#> [1] "2026-01-15 19:50:20 UTC"
 #> 
 
 ont_disconnect()
