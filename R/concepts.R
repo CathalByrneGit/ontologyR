@@ -531,6 +531,8 @@ ont_evaluate <- function(concept_id,
         sql_expr = cv$sql_expr,
         status = cv$status,
         object_type = concept$object_type,
+        pk_column = obj_meta$pk_column,
+        table_name = obj_meta$table_name,
         evaluated_at = Sys.time()
     )
 
