@@ -238,8 +238,8 @@ test_that("version comparison works", {
 
   # v1: B, C, D are TRUE (3)
   # v2: C, D are TRUE (2)
-  expect_equal(comparison$summary$true_count[1], 3)
-  expect_equal(comparison$summary$true_count[2], 2)
+  expect_equal(unname(comparison$summary$true_count[1]), 3)
+  expect_equal(unname(comparison$summary$true_count[2]), 2)
 
   ont_disconnect()
 })
