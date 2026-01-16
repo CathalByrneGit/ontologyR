@@ -1,0 +1,484 @@
+---
+title: "Governance Gates and Access Control"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Governance Gates and Access Control}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## The Airport Security Analogy
+
+When you travel by plane, you don't just walk onto the aircraft. You pass through **gates**:
+
+1. **Ticket Check**: Do you have a valid booking?
+2. **Security Screening**: Any prohibited items?
+3. **Passport Control**: Are you authorized to travel?
+4. **Boarding**: Is it your flight's turn?
+
+Each gate has a specific purpose. Fail any one, and you can't proceed.
+
+**ontologyR governance gates work the same way** — they're checkpoints that data definitions must pass before being promoted to production.
+
+---
+
+## The Problem: Cowboy Data Changes
+
+Without governance, data changes often happen like this:
+
+> "Hey, I updated the 'active customer' definition in the dashboard."
+> "Wait, did anyone review that?"
+> "Review? I just changed the SQL."
+> "That dashboard feeds into our board report..."
+> *chaos ensues*
+
+Governance gates prevent this by requiring:
+- **Audit coverage** before activation
+- **No unresolved drift** events
+- **Approval from authorized users**
+
+---
+
+## Built-in Governance Gates
+
+ontologyR comes with three default gates:
+
+### 1. Audit Coverage Gate
+
+**Purpose**: Ensure definitions have been tested against reality.
+
+```{r audit_gate, eval = FALSE}
+# Default settings
+#> min_audits: 10
+#> min_agreement_rate: 0.9 (90%)
+
+# This gate asks:
+# - Has this concept been audited at least 10 times?
+# - Do humans agree with the system at least 90% of the time?
+```
+
+**The Restaurant Analogy**: You wouldn't put a new dish on the menu without having taste-testers try it first. The audit coverage gate ensures definitions have been "taste-tested" before going live.
+
+### 2. No Open Drift Gate
+
+**Purpose**: Block changes if there's unresolved drift.
+
+```{r drift_gate, eval = FALSE}
+# Default settings
+#> max_open_drift_events: 0
+
+# This gate asks:
+# - Are there any open drift events for this concept?
+# - Has someone investigated why audits are disagreeing?
+```
+
+**The Fire Alarm Analogy**: You can't ignore a fire alarm and proceed with business as usual. Open drift events are like fire alarms — they need to be acknowledged and resolved.
+
+### 3. Approval Required Gate
+
+**Purpose**: Require human sign-off before promotion.
+
+```{r approval_gate, eval = FALSE}
+# Default settings
+#> min_approvals: 1
+#> approver_roles: ["approver", "admin"]
+
+# This gate asks:
+# - Has someone with authority approved this change?
+```
+
+**The Sign-off Analogy**: Important documents need signatures. The approval gate ensures critical data definitions have proper authorization.
+
+---
+
+## Checking Gates
+
+Before activating a concept version, check if it passes all gates:
+
+```{r check_gates, eval = FALSE}
+library(ontologyR)
+ont_connect(":memory:")
+
+# Setup: Create a concept
+DBI::dbWriteTable(ont_get_connection(), "patients", tibble::tibble(
+  patient_id = paste0("P", 1:100),
+  age = sample(18:90, 100, replace = TRUE),
+  risk_score = runif(100, 0, 1)
+))
+ont_register_object("Patient", "patients", "patient_id")
+ont_define_concept("high_risk", "Patient")
+ont_add_version("high_risk", "clinical", 1,
+                sql_expr = "risk_score > 0.7",
+                status = "draft")
+
+# Check all gates before activation
+result <- ont_check_all_gates(
+  concept_id = "high_risk",
+  scope = "clinical",
+  version = 1,
+  action_type = "activation"
+)
+
+result$overall_passed
+#> [1] FALSE
+
+result$blocking_failures
+#> $gate_audit_coverage
+#> $gate_audit_coverage$passed
+#> [1] FALSE
+#> $gate_audit_coverage$details
+#> $gate_audit_coverage$details$audit_count
+#> [1] 0
+#> $gate_audit_coverage$details$required_audits
+#> [1] 10
+```
+
+The concept can't be activated yet because it hasn't been audited.
+
+---
+
+## Satisfying Gates
+
+### Satisfying the Audit Coverage Gate
+
+Record audits to build up coverage:
+
+```{r audits, eval = FALSE}
+# Sample patients and have clinicians review
+sample <- ont_sample_for_audit("high_risk", "clinical", n = 15)
+
+# Record their judgments
+for (i in 1:15) {
+  ont_record_audit(
+    "high_risk", "clinical", 1,
+    object_key = sample$patient_id[i],
+    system_value = sample$concept_value[i],
+    reviewer_value = sample$concept_value[i],  # Assume agreement
+    reviewer_id = "dr_jones"
+  )
+}
+
+# Check the gate again
+result <- ont_check_gate(
+  "gate_audit_coverage",
+  "high_risk", "clinical", 1,
+  "activation"
+)
+result$passed
+#> [1] TRUE
+result$details$audit_count
+#> [1] 15
+result$details$agreement_rate
+#> [1] 1.0
+```
+
+### Satisfying the Approval Gate
+
+Request and receive approval:
+
+```{r approval, eval = FALSE}
+# Request approval
+request_id <- ont_request_approval(
+  "high_risk", "clinical", 1,
+  requested_action = "activate",
+  requested_by = "data_analyst"
+)
+#> v Created approval request: REQ-20250116-abc123
+
+# An approver reviews and approves
+ont_approve_request(
+  request_id,
+  decided_by = "clinical_lead",
+  decision_notes = "Reviewed definition and audit results. Approved for production."
+)
+
+# Check the gate again
+result <- ont_check_gate(
+  "gate_approval_required",
+  "high_risk", "clinical", 1,
+  "activation"
+)
+result$passed
+#> [1] TRUE
+```
+
+---
+
+## The Approval Workflow
+
+ontologyR provides a complete approval workflow:
+
+```{r workflow, eval = FALSE}
+# 1. Analyst creates definition and requests approval
+request_id <- ont_request_approval(
+  "new_concept", "prod", 1,
+  requested_action = "activate",
+  requested_by = "analyst"
+)
+
+# 2. Approvers see pending requests
+pending <- ont_list_pending_approvals()
+pending
+#> # A tibble: 1 x 6
+#>   request_id       concept_id  scope version requested_action status
+#>   <chr>            <chr>       <chr>   <int> <chr>            <chr>
+#> 1 REQ-20250116-... new_concept prod        1 activate         pending
+
+# 3. Approver reviews and decides
+# Option A: Approve
+ont_approve_request(request_id, "approver", "Looks good")
+
+# Option B: Reject
+ont_reject_request(request_id, "approver", "Needs more audit coverage")
+
+# 4. Requester is notified (through your notification system)
+```
+
+---
+
+## RBAC: Role-Based Access Control
+
+Not everyone should be able to approve definitions. ontologyR includes lightweight RBAC.
+
+### Default Roles
+
+| Role | Can Do |
+|------|--------|
+| **viewer** | Read concepts, datasets, audits |
+| **editor** | Create/edit drafts, run evaluations, record audits |
+| **approver** | Approve activations, override gates |
+| **admin** | Everything |
+
+### Assigning Roles
+
+```{r roles, eval = FALSE}
+# Grant editor role to a user
+ont_grant_role(
+  user_id = "alice",
+  role_id = "editor",
+  granted_by = "admin"
+)
+
+# Grant approver role scoped to a specific domain
+ont_grant_role(
+  user_id = "bob",
+  role_id = "approver",
+  scope_type = "domain",
+  scope_value = "clinical",
+  granted_by = "admin"
+)
+
+# Check what roles a user has
+ont_get_user_roles("bob")
+#> # A tibble: 1 x 4
+#>   user_id role_id  scope_type scope_value
+#>   <chr>   <chr>    <chr>      <chr>
+#> 1 bob     approver domain     clinical
+```
+
+### Checking Permissions
+
+```{r permissions, eval = FALSE}
+# Can this user approve things?
+ont_check_permission("alice", "concept:approve")
+#> [1] FALSE
+
+ont_check_permission("bob", "concept:approve", scope_type = "domain", scope_value = "clinical")
+#> [1] TRUE
+
+# Require permission (throws error if not permitted)
+ont_require_permission("alice", "concept:write")  # OK, editors can write
+ont_require_permission("alice", "concept:activate")  # Error!
+#> Error: User 'alice' lacks permission 'concept:activate'.
+```
+
+---
+
+## Custom Gates
+
+You can create custom gates for your organization's needs:
+
+```{r custom_gate, eval = FALSE}
+# Gate requiring minimum sample size
+ont_create_gate(
+  gate_id = "gate_min_sample_size",
+  gate_name = "Minimum Sample Size",
+  gate_type = "custom",
+  applies_to = "activation",
+  conditions = list(
+    min_population = 100,
+    description = "Concept must apply to at least 100 objects"
+  ),
+  severity = "warning"  # Warning, not blocking
+)
+
+# Gate requiring documentation
+ont_create_gate(
+  gate_id = "gate_has_description",
+  gate_name = "Description Required",
+  gate_type = "custom",
+  applies_to = "all",
+  conditions = list(check = "description IS NOT NULL"),
+  severity = "blocking"
+)
+```
+
+---
+
+## Overriding Gates
+
+Sometimes you need to bypass a gate (emergency deployment, etc.). ontologyR allows this with full audit trail:
+
+```{r override, eval = FALSE}
+# Check a gate that fails
+result <- ont_check_gate(
+  "gate_audit_coverage",
+  "emergency_concept", "prod", 1,
+  "activation",
+  checked_by = "analyst"
+)
+result$passed
+#> [1] FALSE
+
+# Override with documented reason
+ont_override_gate(
+  check_id = result$check_id,
+  override_reason = "Emergency deployment approved by CTO. Will complete audits within 48 hours.",
+  overridden_by = "admin_user"
+)
+#> v Gate check REQ-... overridden
+
+# The override is recorded in history
+ont_get_gate_history("emergency_concept", "prod", 1)
+#> Shows the failed check and override reason
+```
+
+**The Emergency Exit Analogy**: Fire exits exist for emergencies, but using one triggers an alarm and is logged. Gate overrides work the same way — possible when necessary, but always recorded.
+
+---
+
+## Gate History: The Audit Trail
+
+Every gate check is recorded:
+
+```{r history, eval = FALSE}
+history <- ont_get_gate_history("high_risk", "clinical", 1)
+
+history
+#> # A tibble: 5 x 8
+#>   check_id        gate_id             check_result checked_at          checked_by
+#>   <chr>           <chr>               <chr>        <dttm>              <chr>
+#> 1 CHK-20250116-a gate_audit_coverage  passed       2025-01-16 14:30:00 analyst
+#> 2 CHK-20250116-b gate_no_open_drift   passed       2025-01-16 14:30:01 analyst
+#> 3 CHK-20250116-c gate_approval_req... passed       2025-01-16 14:30:02 analyst
+#> 4 CHK-20250115-d gate_audit_coverage  failed       2025-01-15 10:00:00 analyst
+#> 5 CHK-20250115-e gate_audit_coverage  failed       2025-01-15 09:00:00 analyst
+```
+
+This answers: **"Why couldn't we activate this yesterday?"**
+
+---
+
+## Practical Example: Concept Promotion Workflow
+
+```{r example, eval = FALSE}
+library(ontologyR)
+ont_connect(":memory:")
+
+# === Setup ===
+DBI::dbWriteTable(ont_get_connection(), "orders", tibble::tibble(
+  order_id = 1:500,
+  amount = runif(500, 10, 1000),
+  status = sample(c("complete", "pending", "cancelled"), 500, replace = TRUE)
+))
+ont_register_object("Order", "orders", "order_id")
+
+# === Step 1: Create Draft Definition ===
+ont_define_concept("high_value_order", "Order",
+                    description = "Orders above $500")
+ont_add_version("high_value_order", "finance", 1,
+                 sql_expr = "amount > 500",
+                 status = "draft")
+
+# === Step 2: Check Gates (expect failure) ===
+gates <- ont_check_all_gates("high_value_order", "finance", 1, "activation")
+gates$overall_passed
+#> [1] FALSE
+# Missing audits and approval
+
+# === Step 3: Conduct Audits ===
+sample <- ont_sample_for_audit("high_value_order", "finance", n = 15)
+for (i in 1:nrow(sample)) {
+  # In reality, a human would review each one
+  ont_record_audit(
+    "high_value_order", "finance", 1,
+    sample$order_id[i],
+    system_value = sample$concept_value[i],
+    reviewer_value = sample$concept_value[i],
+    reviewer_id = "finance_analyst"
+  )
+}
+
+# === Step 4: Request Approval ===
+request_id <- ont_request_approval(
+  "high_value_order", "finance", 1,
+  "activate",
+  requested_by = "finance_analyst"
+)
+
+# === Step 5: Approver Reviews ===
+ont_approve_request(request_id, "finance_manager", "Verified against business rules")
+
+# === Step 6: Check Gates Again ===
+gates <- ont_check_all_gates("high_value_order", "finance", 1, "activation")
+gates$overall_passed
+#> [1] TRUE
+
+# === Step 7: Activate! ===
+ont_activate_version("high_value_order", "finance", 1, activated_by = "finance_manager")
+#> v Activated high_value_order@finance v1
+```
+
+---
+
+## Key Concepts Summary
+
+| Concept | What It Is | Analogy |
+|---------|-----------|---------|
+| **Gate** | Checkpoint before action | Airport security |
+| **Gate Check** | Single evaluation of a gate | Going through scanner |
+| **Blocking Gate** | Must pass to proceed | Passport control |
+| **Warning Gate** | Advises but doesn't block | Advisory signs |
+| **Override** | Bypass with documentation | Emergency exit |
+| **Role** | Set of permissions | Job title |
+| **Permission** | Single allowed action | Key card access |
+| **Approval** | Human sign-off | Signature |
+
+---
+
+## Why This Matters
+
+| Without Governance | With Governance |
+|-------------------|-----------------|
+| Anyone can change definitions | Changes require authorization |
+| No testing required | Must pass audit coverage |
+| Drift can be ignored | Must resolve drift events |
+| Changes happen silently | Full audit trail |
+| "Who approved this?" | Clear approval records |
+
+---
+
+## Next Steps
+
+- See `vignette("introduction")` for core concepts
+- See `vignette("datasets-and-materialization")` for data assets
+- See `vignette("transforms-and-lineage")` for data pipelines
+
+Remember: **Good governance isn't about slowing things down — it's about moving fast with confidence.**

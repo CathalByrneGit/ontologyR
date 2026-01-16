@@ -397,5 +397,9 @@ Most organisations treat definitions like laws. ontologyR helps you treat them l
 Now that you understand the concepts:
 
 - See `vignette("introduction")` for code examples and API walkthrough
+- See `vignette("datasets-and-materialization")` for the factory analogy: tracking data assets
+- See `vignette("transforms-and-lineage")` for the assembly line analogy: data pipelines
+- See `vignette("governance-gates")` for the airport security analogy: quality controls
+- See `vignette("end-to-end-workflow")` for a complete healthcare example
 
 Remember: **the goal isn't perfect definitions — it's definitions you can test, improve, and trust.**
