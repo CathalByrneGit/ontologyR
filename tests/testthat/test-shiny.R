@@ -182,12 +182,14 @@ test_that("upstream/downstream traversal logic is correct", {
     expect_true("B" %in% upstream)
     expect_true("A" %in% upstream)
 
-    # Test with depth limit
+    # Test with depth limit (depth=2 means 2 iterations, visiting A then B)
     limited <- get_connected_nodes(edges, "A", "downstream", 2)
     expect_true("A" %in% limited)
     expect_true("B" %in% limited)
-    expect_true("C" %in% limited)
-    # D and E may or may not be included depending on how depth is counted
+    # C is discovered but not added to visited before loop exits
+    expect_false("C" %in% limited)
+    expect_false("D" %in% limited)
+    expect_false("E" %in% limited)
 
     # Test empty edges
     empty_result <- get_connected_nodes(tibble::tibble(from = character(), to = character()), "A", "downstream")
