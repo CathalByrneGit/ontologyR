@@ -23,6 +23,7 @@ NULL
 #' @return An object of class `ontology`.
 #'
 #' @examples
+#' \dontrun{
 #' ont <- ontology(":memory:")
 #'
 #' # Register and define concepts
@@ -44,6 +45,7 @@ NULL
 #'
 #' # Check drift
 #' ont$drift_status()
+#' }
 #'
 #' @export
 ontology <- function(path = "ontology.duckdb", read_only = FALSE) {

@@ -17,13 +17,13 @@ Imports:
     DBI,
     duckdb,
     dplyr,
-    dbplyr,
     tibble,
     glue,
     rlang,
     cli,
     digest,
-    jsonlite
+    jsonlite,
+    uuid
 Suggests:
     testthat (>= 3.0.0),
     knitr,
