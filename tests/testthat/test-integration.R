@@ -306,11 +306,11 @@ test_that("dataset and lineage workflow: register -> materialize -> track lineag
 
     # 6. Get upstream of materialized dataset
     upstream <- ont_get_upstream(mat_result$dataset_id)
-    expect_true("encounters_source" %in% upstream$dataset_id)
+    expect_true("encounters_source" %in% upstream$from_dataset_id)
 
     # 7. Get downstream of source
     downstream <- ont_get_downstream("encounters_source")
-    expect_true(mat_result$dataset_id %in% downstream$dataset_id)
+    expect_true(mat_result$dataset_id %in% downstream$to_dataset_id)
 })
 
 # -----------------------------------------------------------------------------
