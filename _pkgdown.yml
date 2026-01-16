@@ -18,6 +18,7 @@ articles:
   - title: Putting It All Together
     contents:
       - end-to-end-workflow
+      - official-statistics
 
 navbar:
   structure:
@@ -43,6 +44,8 @@ navbar:
         - text: Governance Gates
           href: articles/governance-gates.html
         - text: "---"
-        - text: "Complete Example"
-        - text: End-to-End Workflow
+        - text: "Complete Examples"
+        - text: End-to-End Workflow (Healthcare)
           href: articles/end-to-end-workflow.html
+        - text: Official Statistics (Labour Force)
+          href: articles/official-statistics.html
