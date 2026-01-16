@@ -629,4 +629,33 @@ create_tables_inline <- function(con) {
             decision_notes TEXT
         )
     ")
+
+    # Templates (for concept inheritance)
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_templates (
+            template_id TEXT PRIMARY KEY,
+            template_name TEXT NOT NULL,
+            object_type TEXT NOT NULL,
+            base_sql_expr TEXT NOT NULL,
+            parameters TEXT,
+            description TEXT,
+            source_standard TEXT,
+            owner_domain TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT
+        )
+    ")
+
+    # Template inheritance
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_template_inheritance (
+            concept_id TEXT NOT NULL,
+            template_id TEXT NOT NULL,
+            parameter_values TEXT,
+            inheritance_type TEXT DEFAULT 'extends',
+            deviation_notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (concept_id, template_id)
+        )
+    ")
 }

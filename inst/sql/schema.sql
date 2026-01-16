@@ -659,3 +659,70 @@ JOIN ont_concept_versions cv ON ar.concept_id = cv.concept_id
     AND ar.scope = cv.scope AND ar.version = cv.version
 JOIN ont_concepts c ON ar.concept_id = c.concept_id
 WHERE ar.status = 'pending';
+
+-- =============================================================================
+-- CONCEPT TEMPLATES
+-- =============================================================================
+-- Templates allow creating base concept definitions that can be inherited by
+-- country/scope-specific variants. This supports patterns like:
+--   - ILO "unemployed" template -> US, UK, Ireland variants
+--   - Base "employed" definition -> sector-specific variants
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- TEMPLATES
+-- A template is a base concept definition that other concepts can inherit from.
+-- The sql_expr contains placeholders (e.g., {{age_threshold}}) that variants
+-- can customize.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_templates (
+    template_id      TEXT PRIMARY KEY,
+    template_name    TEXT NOT NULL,
+    object_type      TEXT NOT NULL,
+    base_sql_expr    TEXT NOT NULL,           -- SQL with optional {{placeholders}}
+    parameters       TEXT,                    -- JSON: parameter definitions with defaults
+    description      TEXT,
+    source_standard  TEXT,                    -- e.g., "ILO", "OECD", "internal"
+    owner_domain     TEXT,
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by       TEXT,
+
+    FOREIGN KEY (object_type) REFERENCES ont_object_types(object_type)
+);
+
+-- -----------------------------------------------------------------------------
+-- TEMPLATE INHERITANCE
+-- Links concepts to their parent templates with parameter overrides.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_template_inheritance (
+    concept_id       TEXT NOT NULL,
+    template_id      TEXT NOT NULL,
+    parameter_values TEXT,                    -- JSON: actual values for template parameters
+    inheritance_type TEXT DEFAULT 'extends',  -- 'extends', 'implements', 'adapts'
+    deviation_notes  TEXT,                    -- Why this variant differs from template
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (concept_id, template_id),
+    FOREIGN KEY (concept_id) REFERENCES ont_concepts(concept_id),
+    FOREIGN KEY (template_id) REFERENCES ont_templates(template_id)
+);
+
+-- -----------------------------------------------------------------------------
+-- VIEWS: Template convenience views
+-- -----------------------------------------------------------------------------
+
+-- List all template variants
+CREATE VIEW IF NOT EXISTS ont_template_variants AS
+SELECT
+    t.template_id,
+    t.template_name,
+    t.source_standard,
+    ti.concept_id,
+    c.description AS concept_description,
+    c.owner_domain AS concept_owner,
+    ti.inheritance_type,
+    ti.parameter_values,
+    ti.deviation_notes
+FROM ont_templates t
+JOIN ont_template_inheritance ti ON t.template_id = ti.template_id
+JOIN ont_concepts c ON ti.concept_id = c.concept_id;

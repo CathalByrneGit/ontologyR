@@ -247,3 +247,98 @@ test_that("branching graph traversal works", {
     upstream_e <- get_connected_nodes(edges, "E", "upstream", 10)
     expect_setequal(upstream_e, c("A", "B", "C", "D", "E"))
 })
+
+# =============================================================================
+# Ontology Explorer App Tests
+# =============================================================================
+
+test_that("ontology explorer app file exists in inst", {
+    app_path <- file.path(
+        testthat::test_path(), "..", "..", "inst", "shiny", "ontology-explorer", "app.R"
+    )
+    app_path <- normalizePath(app_path, mustWork = FALSE)
+
+    expect_true(
+        file.exists(app_path),
+        info = paste("Expected app at:", app_path)
+    )
+})
+
+test_that("ontology explorer contains required UI elements", {
+    app_path <- file.path(
+        testthat::test_path(), "..", "..", "inst", "shiny", "ontology-explorer", "app.R"
+    )
+    app_path <- normalizePath(app_path, mustWork = FALSE)
+
+    skip_if_not(file.exists(app_path), "App file not found")
+
+    app_code <- readLines(app_path)
+    app_text <- paste(app_code, collapse = "\n")
+
+    # Check for required UI components
+    expect_true(grepl("page_navbar", app_text), info = "Missing page_navbar")
+    expect_true(grepl("nav_panel", app_text), info = "Missing nav_panel")
+    expect_true(grepl("DTOutput", app_text), info = "Missing DTOutput")
+    expect_true(grepl("shinyApp", app_text), info = "Missing shinyApp call")
+})
+
+test_that("ontology explorer contains required tabs", {
+    app_path <- file.path(
+        testthat::test_path(), "..", "..", "inst", "shiny", "ontology-explorer", "app.R"
+    )
+    app_path <- normalizePath(app_path, mustWork = FALSE)
+
+    skip_if_not(file.exists(app_path), "App file not found")
+
+    app_code <- readLines(app_path)
+    app_text <- paste(app_code, collapse = "\n")
+
+    # Check for expected tabs
+    expect_true(grepl("Concepts", app_text), info = "Missing Concepts tab")
+    expect_true(grepl("Templates", app_text), info = "Missing Templates tab")
+    expect_true(grepl("Audits", app_text), info = "Missing Audits tab")
+    expect_true(grepl("Governance", app_text), info = "Missing Governance tab")
+})
+
+test_that("ontology explorer contains required server elements", {
+    app_path <- file.path(
+        testthat::test_path(), "..", "..", "inst", "shiny", "ontology-explorer", "app.R"
+    )
+    app_path <- normalizePath(app_path, mustWork = FALSE)
+
+    skip_if_not(file.exists(app_path), "App file not found")
+
+    app_code <- readLines(app_path)
+    app_text <- paste(app_code, collapse = "\n")
+
+    # Check for required server components
+    expect_true(grepl("renderDT", app_text), info = "Missing renderDT")
+    expect_true(grepl("reactiveValues", app_text), info = "Missing reactiveValues")
+    expect_true(grepl("observeEvent", app_text), info = "Missing observeEvent")
+    expect_true(grepl("DBI::dbConnect", app_text), info = "Missing database connection")
+})
+
+test_that("ontology explorer supports db_path option", {
+    app_path <- file.path(
+        testthat::test_path(), "..", "..", "inst", "shiny", "ontology-explorer", "app.R"
+    )
+    app_path <- normalizePath(app_path, mustWork = FALSE)
+
+    skip_if_not(file.exists(app_path), "App file not found")
+
+    app_code <- readLines(app_path)
+    app_text <- paste(app_code, collapse = "\n")
+
+    expect_true(
+        grepl("ontologyR\\.shiny\\.db_path", app_text),
+        info = "App should read ontologyR.shiny.db_path option"
+    )
+})
+
+test_that("ont_run_explorer function exists", {
+    expect_true(
+        exists("ont_run_explorer", envir = asNamespace("ontologyR")) ||
+        "ont_run_explorer" %in% ls(pattern = "ont_run_explorer"),
+        info = "ont_run_explorer should exist"
+    )
+})
