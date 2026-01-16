@@ -80,15 +80,12 @@ Invisibly returns `TRUE` on success.
 ## Examples
 
 ``` r
+if (FALSE) { # \dontrun{
 ont_connect(":memory:")
-#> ! Schema file parsing failed, using inline creation: Extension Autoloading Error: An error occurred while trying to automatically install the required extension 'icu': Extension "/home/runner/.local/share/R/duckdb/extensions/v1.4.3/linux_amd64/icu.duckdb_extension" not found. Extension "icu" is an existing extension.  Install it first using "INSTALL icu". ℹ Context: rapi_prepare ℹ Error type: AUTOLOAD
-#> ✔ Connected to ontology database: ':memory:'
 
 # Register object types first
 ont_register_object("Encounter", "encounters", "encounter_id")
-#> ✔ Registered object type "Encounter" -> "encounters"
 ont_register_object("Patient", "patients", "patient_id")
-#> ✔ Registered object type "Patient" -> "patients"
 
 # Register link between them
 ont_register_link(
@@ -100,8 +97,7 @@ ont_register_link(
     to_key = "patient_id",
     cardinality = "many-to-one"
 )
-#> ✔ Registered link type "encounter_patient": Encounter -> Patient
 
 ont_disconnect()
-#> ✔ Disconnected from ontology database.
+} # }
 ```

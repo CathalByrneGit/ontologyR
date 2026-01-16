@@ -63,9 +63,8 @@ A tibble of sampled objects with their concept values.
 ## Examples
 
 ``` r
+if (FALSE) { # \dontrun{
 ont_connect(":memory:")
-#> ! Schema file parsing failed, using inline creation: Extension Autoloading Error: An error occurred while trying to automatically install the required extension 'icu': Extension "/home/runner/.local/share/R/duckdb/extensions/v1.4.3/linux_amd64/icu.duckdb_extension" not found. Extension "icu" is an existing extension.  Install it first using "INSTALL icu". ℹ Context: rapi_prepare ℹ Error type: AUTOLOAD
-#> ✔ Connected to ontology database: ':memory:'
 # ... setup ...
 
 # Sample 20 cases that the system says are "ready for discharge"
@@ -75,5 +74,5 @@ sample <- ont_sample_for_audit(
     n = 20,
     concept_value = TRUE
 )
-#> Error in ont_get_active_version(concept_id, scope, con = con): No active version found for "ready_for_discharge"@flow
+} # }
 ```

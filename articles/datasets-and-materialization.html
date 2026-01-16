@@ -126,7 +126,7 @@ your data assets.</p>
 <span><span class="fu"><a href="../reference/ont_connect.html">ont_connect</a></span><span class="op">(</span><span class="st">":memory:"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Register your source data</span></span>
-<span><span class="fu">ont_register_dataset</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_register_dataset.html">ont_register_dataset</a></span><span class="op">(</span></span>
 <span>  dataset_id <span class="op">=</span> <span class="st">"ds_raw_orders"</span>,</span>
 <span>  dataset_name <span class="op">=</span> <span class="st">"Raw Orders"</span>,</span>
 <span>  physical_name <span class="op">=</span> <span class="st">"orders"</span>,</span>
@@ -136,7 +136,7 @@ your data assets.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># See all registered datasets</span></span>
-<span><span class="fu">ont_list_datasets</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_list_datasets.html">ont_list_datasets</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 1 x 12</span></span>
 <span><span class="co">#&gt;   dataset_id    dataset_name physical_name dataset_type row_count owner</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;         &lt;chr&gt;        &lt;chr&gt;         &lt;chr&gt;            &lt;int&gt; &lt;chr&gt;</span></span>
@@ -166,7 +166,7 @@ recalculating?</p>
 persistent table:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Turn the concept into a real table</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">ont_materialize</span><span class="op">(</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_materialize.html">ont_materialize</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"high_value_customer"</span>,</span>
 <span>  scope <span class="op">=</span> <span class="st">"marketing"</span></span>
 <span><span class="op">)</span></span>
@@ -202,7 +202,7 @@ Calculation is expensive - You need a point-in-time snapshot</p>
 complete log of what happened:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># See all recent runs</span></span>
-<span><span class="fu">ont_list_runs</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_list_runs.html">ont_list_runs</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 x 12</span></span>
 <span><span class="co">#&gt;   run_id              status    run_type       output_row_count started_at</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;               &lt;chr&gt;     &lt;chr&gt;                     &lt;int&gt; &lt;dttm&gt;</span></span>
@@ -211,7 +211,7 @@ complete log of what happened:</p>
 <span><span class="co">#&gt; 3 RUN-20250114-ghi789 completed materialization            1156 2025-01-14 10:30:00</span></span>
 <span></span>
 <span><span class="co"># Get details for a specific run</span></span>
-<span><span class="va">run</span> <span class="op">&lt;-</span> <span class="fu">ont_get_run</span><span class="op">(</span><span class="st">"RUN-20250116-abc123"</span><span class="op">)</span></span>
+<span><span class="va">run</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_get_run.html">ont_get_run</a></span><span class="op">(</span><span class="st">"RUN-20250116-abc123"</span><span class="op">)</span></span>
 <span><span class="va">run</span><span class="op">$</span><span class="va">sql_executed</span></span>
 <span><span class="co">#&gt; "CREATE OR REPLACE TABLE mat_high_value_customer_marketing AS</span></span>
 <span><span class="co">#&gt;  SELECT t.*, (lifetime_spend &gt; 1000) AS concept_value</span></span>
@@ -231,7 +231,7 @@ knowing the relationships between datasets.</p>
 </h3>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># What feeds into my high-value customers table?</span></span>
-<span><span class="fu">ont_get_upstream</span><span class="op">(</span><span class="st">"DS-mat_high_value_customer_marketing"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_get_upstream.html">ont_get_upstream</a></span><span class="op">(</span><span class="st">"DS-mat_high_value_customer_marketing"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 1 x 5</span></span>
 <span><span class="co">#&gt;   from_dataset_id to_dataset_id                       edge_type       depth</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;           &lt;chr&gt;                               &lt;chr&gt;           &lt;int&gt;</span></span>
@@ -242,7 +242,7 @@ knowing the relationships between datasets.</p>
 </h3>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># If I change the customers table, what breaks?</span></span>
-<span><span class="fu">ont_get_downstream</span><span class="op">(</span><span class="st">"DS-customers"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_get_downstream.html">ont_get_downstream</a></span><span class="op">(</span><span class="st">"DS-customers"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 2 x 5</span></span>
 <span><span class="co">#&gt;   from_dataset_id to_dataset_id                          edge_type       depth</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;           &lt;chr&gt;                                  &lt;chr&gt;           &lt;int&gt;</span></span>
@@ -266,7 +266,7 @@ lets you see exactly who.</p>
 <p>For any materialized dataset, you can get its complete
 provenance:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">prov</span> <span class="op">&lt;-</span> <span class="fu">ont_get_provenance</span><span class="op">(</span><span class="st">"DS-mat_high_value_customer_marketing"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">prov</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_get_provenance.html">ont_get_provenance</a></span><span class="op">(</span><span class="st">"DS-mat_high_value_customer_marketing"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># What concept defined this?</span></span>
 <span><span class="va">prov</span><span class="op">$</span><span class="va">concept</span></span>
@@ -310,7 +310,7 @@ come from?”</strong></p>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 2. Register the source</span></span>
-<span><span class="fu">ont_register_dataset</span><span class="op">(</span><span class="st">"ds_customers"</span>, <span class="st">"Customers"</span>, <span class="st">"customers"</span>, <span class="st">"source"</span>,</span>
+<span><span class="fu"><a href="../reference/ont_register_dataset.html">ont_register_dataset</a></span><span class="op">(</span><span class="st">"ds_customers"</span>, <span class="st">"Customers"</span>, <span class="st">"customers"</span>, <span class="st">"source"</span>,</span>
 <span>                      owner <span class="op">=</span> <span class="st">"data_engineering"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/ont_register_object.html">ont_register_object</a></span><span class="op">(</span><span class="st">"Customer"</span>, <span class="st">"customers"</span>, <span class="st">"customer_id"</span><span class="op">)</span></span>
 <span></span>
@@ -327,11 +327,11 @@ come from?”</strong></p>
 <span>                 status <span class="op">=</span> <span class="st">"active"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 4. Materialize for downstream use</span></span>
-<span><span class="fu">ont_materialize</span><span class="op">(</span><span class="st">"high_value"</span>, <span class="st">"marketing"</span><span class="op">)</span></span>
-<span><span class="fu">ont_materialize</span><span class="op">(</span><span class="st">"at_risk_churn"</span>, <span class="st">"retention"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_materialize.html">ont_materialize</a></span><span class="op">(</span><span class="st">"high_value"</span>, <span class="st">"marketing"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_materialize.html">ont_materialize</a></span><span class="op">(</span><span class="st">"at_risk_churn"</span>, <span class="st">"retention"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 5. Check what we've built</span></span>
-<span><span class="fu">ont_list_datasets</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_list_datasets.html">ont_list_datasets</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 x 6</span></span>
 <span><span class="co">#&gt;   dataset_id                     dataset_type row_count</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;                          &lt;chr&gt;            &lt;int&gt;</span></span>
@@ -340,7 +340,7 @@ come from?”</strong></p>
 <span><span class="co">#&gt; 3 DS-mat_at_risk_churn_retention materialized       287</span></span>
 <span></span>
 <span><span class="co"># 6. Trace lineage</span></span>
-<span><span class="fu">ont_get_downstream</span><span class="op">(</span><span class="st">"ds_customers"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_get_downstream.html">ont_get_downstream</a></span><span class="op">(</span><span class="st">"ds_customers"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Shows both materialized tables depend on customers</span></span></code></pre></div>
 <hr>
 </div>

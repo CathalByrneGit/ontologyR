@@ -193,7 +193,7 @@ gates:</p>
 <span>                status <span class="op">=</span> <span class="st">"draft"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check all gates before activation</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">ont_check_all_gates</span><span class="op">(</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_check_all_gates.html">ont_check_all_gates</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"high_risk"</span>,</span>
 <span>  scope <span class="op">=</span> <span class="st">"clinical"</span>,</span>
 <span>  version <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -239,7 +239,7 @@ audited.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="co"># Check the gate again</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">ont_check_gate</span><span class="op">(</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_check_gate.html">ont_check_gate</a></span><span class="op">(</span></span>
 <span>  <span class="st">"gate_audit_coverage"</span>,</span>
 <span>  <span class="st">"high_risk"</span>, <span class="st">"clinical"</span>, <span class="fl">1</span>,</span>
 <span>  <span class="st">"activation"</span></span>
@@ -257,7 +257,7 @@ audited.</p>
 <p>Request and receive approval:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Request approval</span></span>
-<span><span class="va">request_id</span> <span class="op">&lt;-</span> <span class="fu">ont_request_approval</span><span class="op">(</span></span>
+<span><span class="va">request_id</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_request_approval.html">ont_request_approval</a></span><span class="op">(</span></span>
 <span>  <span class="st">"high_risk"</span>, <span class="st">"clinical"</span>, <span class="fl">1</span>,</span>
 <span>  requested_action <span class="op">=</span> <span class="st">"activate"</span>,</span>
 <span>  requested_by <span class="op">=</span> <span class="st">"data_analyst"</span></span>
@@ -265,14 +265,14 @@ audited.</p>
 <span><span class="co">#&gt; v Created approval request: REQ-20250116-abc123</span></span>
 <span></span>
 <span><span class="co"># An approver reviews and approves</span></span>
-<span><span class="fu">ont_approve_request</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_approve_request.html">ont_approve_request</a></span><span class="op">(</span></span>
 <span>  <span class="va">request_id</span>,</span>
 <span>  decided_by <span class="op">=</span> <span class="st">"clinical_lead"</span>,</span>
 <span>  decision_notes <span class="op">=</span> <span class="st">"Reviewed definition and audit results. Approved for production."</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check the gate again</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">ont_check_gate</span><span class="op">(</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_check_gate.html">ont_check_gate</a></span><span class="op">(</span></span>
 <span>  <span class="st">"gate_approval_required"</span>,</span>
 <span>  <span class="st">"high_risk"</span>, <span class="st">"clinical"</span>, <span class="fl">1</span>,</span>
 <span>  <span class="st">"activation"</span></span>
@@ -288,14 +288,14 @@ audited.</p>
 <p>ontologyR provides a complete approval workflow:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 1. Analyst creates definition and requests approval</span></span>
-<span><span class="va">request_id</span> <span class="op">&lt;-</span> <span class="fu">ont_request_approval</span><span class="op">(</span></span>
+<span><span class="va">request_id</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_request_approval.html">ont_request_approval</a></span><span class="op">(</span></span>
 <span>  <span class="st">"new_concept"</span>, <span class="st">"prod"</span>, <span class="fl">1</span>,</span>
 <span>  requested_action <span class="op">=</span> <span class="st">"activate"</span>,</span>
 <span>  requested_by <span class="op">=</span> <span class="st">"analyst"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 2. Approvers see pending requests</span></span>
-<span><span class="va">pending</span> <span class="op">&lt;-</span> <span class="fu">ont_list_pending_approvals</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">pending</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_list_pending_approvals.html">ont_list_pending_approvals</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">pending</span></span>
 <span><span class="co">#&gt; # A tibble: 1 x 6</span></span>
 <span><span class="co">#&gt;   request_id       concept_id  scope version requested_action status</span></span>
@@ -304,10 +304,10 @@ audited.</p>
 <span></span>
 <span><span class="co"># 3. Approver reviews and decides</span></span>
 <span><span class="co"># Option A: Approve</span></span>
-<span><span class="fu">ont_approve_request</span><span class="op">(</span><span class="va">request_id</span>, <span class="st">"approver"</span>, <span class="st">"Looks good"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_approve_request.html">ont_approve_request</a></span><span class="op">(</span><span class="va">request_id</span>, <span class="st">"approver"</span>, <span class="st">"Looks good"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Option B: Reject</span></span>
-<span><span class="fu">ont_reject_request</span><span class="op">(</span><span class="va">request_id</span>, <span class="st">"approver"</span>, <span class="st">"Needs more audit coverage"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_reject_request.html">ont_reject_request</a></span><span class="op">(</span><span class="va">request_id</span>, <span class="st">"approver"</span>, <span class="st">"Needs more audit coverage"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 4. Requester is notified (through your notification system)</span></span></code></pre></div>
 <hr>
@@ -350,14 +350,14 @@ includes lightweight RBAC.</p>
 </h3>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Grant editor role to a user</span></span>
-<span><span class="fu">ont_grant_role</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_grant_role.html">ont_grant_role</a></span><span class="op">(</span></span>
 <span>  user_id <span class="op">=</span> <span class="st">"alice"</span>,</span>
 <span>  role_id <span class="op">=</span> <span class="st">"editor"</span>,</span>
 <span>  granted_by <span class="op">=</span> <span class="st">"admin"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Grant approver role scoped to a specific domain</span></span>
-<span><span class="fu">ont_grant_role</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_grant_role.html">ont_grant_role</a></span><span class="op">(</span></span>
 <span>  user_id <span class="op">=</span> <span class="st">"bob"</span>,</span>
 <span>  role_id <span class="op">=</span> <span class="st">"approver"</span>,</span>
 <span>  scope_type <span class="op">=</span> <span class="st">"domain"</span>,</span>
@@ -366,7 +366,7 @@ includes lightweight RBAC.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check what roles a user has</span></span>
-<span><span class="fu">ont_get_user_roles</span><span class="op">(</span><span class="st">"bob"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_get_user_roles.html">ont_get_user_roles</a></span><span class="op">(</span><span class="st">"bob"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 1 x 4</span></span>
 <span><span class="co">#&gt;   user_id role_id  scope_type scope_value</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;      &lt;chr&gt;</span></span>
@@ -377,15 +377,15 @@ includes lightweight RBAC.</p>
 </h3>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Can this user approve things?</span></span>
-<span><span class="fu">ont_check_permission</span><span class="op">(</span><span class="st">"alice"</span>, <span class="st">"concept:approve"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_check_permission.html">ont_check_permission</a></span><span class="op">(</span><span class="st">"alice"</span>, <span class="st">"concept:approve"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] FALSE</span></span>
 <span></span>
-<span><span class="fu">ont_check_permission</span><span class="op">(</span><span class="st">"bob"</span>, <span class="st">"concept:approve"</span>, scope_type <span class="op">=</span> <span class="st">"domain"</span>, scope_value <span class="op">=</span> <span class="st">"clinical"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_check_permission.html">ont_check_permission</a></span><span class="op">(</span><span class="st">"bob"</span>, <span class="st">"concept:approve"</span>, scope_type <span class="op">=</span> <span class="st">"domain"</span>, scope_value <span class="op">=</span> <span class="st">"clinical"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
 <span></span>
 <span><span class="co"># Require permission (throws error if not permitted)</span></span>
-<span><span class="fu">ont_require_permission</span><span class="op">(</span><span class="st">"alice"</span>, <span class="st">"concept:write"</span><span class="op">)</span>  <span class="co"># OK, editors can write</span></span>
-<span><span class="fu">ont_require_permission</span><span class="op">(</span><span class="st">"alice"</span>, <span class="st">"concept:activate"</span><span class="op">)</span>  <span class="co"># Error!</span></span>
+<span><span class="fu"><a href="../reference/ont_require_permission.html">ont_require_permission</a></span><span class="op">(</span><span class="st">"alice"</span>, <span class="st">"concept:write"</span><span class="op">)</span>  <span class="co"># OK, editors can write</span></span>
+<span><span class="fu"><a href="../reference/ont_require_permission.html">ont_require_permission</a></span><span class="op">(</span><span class="st">"alice"</span>, <span class="st">"concept:activate"</span><span class="op">)</span>  <span class="co"># Error!</span></span>
 <span><span class="co">#&gt; Error: User 'alice' lacks permission 'concept:activate'.</span></span></code></pre></div>
 <hr>
 </div>
@@ -396,7 +396,7 @@ includes lightweight RBAC.</p>
 <p>You can create custom gates for your organization’s needs:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Gate requiring minimum sample size</span></span>
-<span><span class="fu">ont_create_gate</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_create_gate.html">ont_create_gate</a></span><span class="op">(</span></span>
 <span>  gate_id <span class="op">=</span> <span class="st">"gate_min_sample_size"</span>,</span>
 <span>  gate_name <span class="op">=</span> <span class="st">"Minimum Sample Size"</span>,</span>
 <span>  gate_type <span class="op">=</span> <span class="st">"custom"</span>,</span>
@@ -409,7 +409,7 @@ includes lightweight RBAC.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Gate requiring documentation</span></span>
-<span><span class="fu">ont_create_gate</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_create_gate.html">ont_create_gate</a></span><span class="op">(</span></span>
 <span>  gate_id <span class="op">=</span> <span class="st">"gate_has_description"</span>,</span>
 <span>  gate_name <span class="op">=</span> <span class="st">"Description Required"</span>,</span>
 <span>  gate_type <span class="op">=</span> <span class="st">"custom"</span>,</span>
@@ -426,7 +426,7 @@ includes lightweight RBAC.</p>
 ontologyR allows this with full audit trail:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check a gate that fails</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">ont_check_gate</span><span class="op">(</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_check_gate.html">ont_check_gate</a></span><span class="op">(</span></span>
 <span>  <span class="st">"gate_audit_coverage"</span>,</span>
 <span>  <span class="st">"emergency_concept"</span>, <span class="st">"prod"</span>, <span class="fl">1</span>,</span>
 <span>  <span class="st">"activation"</span>,</span>
@@ -436,7 +436,7 @@ ontologyR allows this with full audit trail:</p>
 <span><span class="co">#&gt; [1] FALSE</span></span>
 <span></span>
 <span><span class="co"># Override with documented reason</span></span>
-<span><span class="fu">ont_override_gate</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_override_gate.html">ont_override_gate</a></span><span class="op">(</span></span>
 <span>  check_id <span class="op">=</span> <span class="va">result</span><span class="op">$</span><span class="va">check_id</span>,</span>
 <span>  override_reason <span class="op">=</span> <span class="st">"Emergency deployment approved by CTO. Will complete audits within 48 hours."</span>,</span>
 <span>  overridden_by <span class="op">=</span> <span class="st">"admin_user"</span></span>
@@ -444,7 +444,7 @@ ontologyR allows this with full audit trail:</p>
 <span><span class="co">#&gt; v Gate check REQ-... overridden</span></span>
 <span></span>
 <span><span class="co"># The override is recorded in history</span></span>
-<span><span class="fu">ont_get_gate_history</span><span class="op">(</span><span class="st">"emergency_concept"</span>, <span class="st">"prod"</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_get_gate_history.html">ont_get_gate_history</a></span><span class="op">(</span><span class="st">"emergency_concept"</span>, <span class="st">"prod"</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Shows the failed check and override reason</span></span></code></pre></div>
 <p><strong>The Emergency Exit Analogy</strong>: Fire exits exist for
 emergencies, but using one triggers an alarm and is logged. Gate
@@ -457,7 +457,7 @@ recorded.</p>
 </h2>
 <p>Every gate check is recorded:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">history</span> <span class="op">&lt;-</span> <span class="fu">ont_get_gate_history</span><span class="op">(</span><span class="st">"high_risk"</span>, <span class="st">"clinical"</span>, <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">history</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_get_gate_history.html">ont_get_gate_history</a></span><span class="op">(</span><span class="st">"high_risk"</span>, <span class="st">"clinical"</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">history</span></span>
 <span><span class="co">#&gt; # A tibble: 5 x 8</span></span>
@@ -495,7 +495,7 @@ yesterday?”</strong></p>
 <span>                 status <span class="op">=</span> <span class="st">"draft"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># === Step 2: Check Gates (expect failure) ===</span></span>
-<span><span class="va">gates</span> <span class="op">&lt;-</span> <span class="fu">ont_check_all_gates</span><span class="op">(</span><span class="st">"high_value_order"</span>, <span class="st">"finance"</span>, <span class="fl">1</span>, <span class="st">"activation"</span><span class="op">)</span></span>
+<span><span class="va">gates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_check_all_gates.html">ont_check_all_gates</a></span><span class="op">(</span><span class="st">"high_value_order"</span>, <span class="st">"finance"</span>, <span class="fl">1</span>, <span class="st">"activation"</span><span class="op">)</span></span>
 <span><span class="va">gates</span><span class="op">$</span><span class="va">overall_passed</span></span>
 <span><span class="co">#&gt; [1] FALSE</span></span>
 <span><span class="co"># Missing audits and approval</span></span>
@@ -514,17 +514,17 @@ yesterday?”</strong></p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="co"># === Step 4: Request Approval ===</span></span>
-<span><span class="va">request_id</span> <span class="op">&lt;-</span> <span class="fu">ont_request_approval</span><span class="op">(</span></span>
+<span><span class="va">request_id</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_request_approval.html">ont_request_approval</a></span><span class="op">(</span></span>
 <span>  <span class="st">"high_value_order"</span>, <span class="st">"finance"</span>, <span class="fl">1</span>,</span>
 <span>  <span class="st">"activate"</span>,</span>
 <span>  requested_by <span class="op">=</span> <span class="st">"finance_analyst"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># === Step 5: Approver Reviews ===</span></span>
-<span><span class="fu">ont_approve_request</span><span class="op">(</span><span class="va">request_id</span>, <span class="st">"finance_manager"</span>, <span class="st">"Verified against business rules"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_approve_request.html">ont_approve_request</a></span><span class="op">(</span><span class="va">request_id</span>, <span class="st">"finance_manager"</span>, <span class="st">"Verified against business rules"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># === Step 6: Check Gates Again ===</span></span>
-<span><span class="va">gates</span> <span class="op">&lt;-</span> <span class="fu">ont_check_all_gates</span><span class="op">(</span><span class="st">"high_value_order"</span>, <span class="st">"finance"</span>, <span class="fl">1</span>, <span class="st">"activation"</span><span class="op">)</span></span>
+<span><span class="va">gates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_check_all_gates.html">ont_check_all_gates</a></span><span class="op">(</span><span class="st">"high_value_order"</span>, <span class="st">"finance"</span>, <span class="fl">1</span>, <span class="st">"activation"</span><span class="op">)</span></span>
 <span><span class="va">gates</span><span class="op">$</span><span class="va">overall_passed</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
 <span></span>

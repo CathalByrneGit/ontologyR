@@ -118,7 +118,7 @@ organization. You need to:</p>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Register the source dataset</span></span>
-<span><span class="fu">ont_register_dataset</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_register_dataset.html">ont_register_dataset</a></span><span class="op">(</span></span>
 <span>  dataset_id <span class="op">=</span> <span class="st">"ds_encounters"</span>,</span>
 <span>  dataset_name <span class="op">=</span> <span class="st">"Hospital Encounters"</span>,</span>
 <span>  physical_name <span class="op">=</span> <span class="st">"encounters"</span>,</span>
@@ -292,27 +292,27 @@ we discovered through testing.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="co"># Check governance gates</span></span>
-<span><span class="va">gates</span> <span class="op">&lt;-</span> <span class="fu">ont_check_all_gates</span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"operations"</span>, <span class="fl">2</span>, <span class="st">"activation"</span><span class="op">)</span></span>
+<span><span class="va">gates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_check_all_gates.html">ont_check_all_gates</a></span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"operations"</span>, <span class="fl">2</span>, <span class="st">"activation"</span><span class="op">)</span></span>
 <span><span class="va">gates</span><span class="op">$</span><span class="va">blocking_failures</span></span>
 <span><span class="co">#&gt; $gate_approval_required</span></span>
 <span><span class="co">#&gt; ... approval still needed</span></span>
 <span></span>
 <span><span class="co"># Request approval</span></span>
-<span><span class="va">request_id</span> <span class="op">&lt;-</span> <span class="fu">ont_request_approval</span><span class="op">(</span></span>
+<span><span class="va">request_id</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_request_approval.html">ont_request_approval</a></span><span class="op">(</span></span>
 <span>  <span class="st">"ready_for_discharge"</span>, <span class="st">"operations"</span>, <span class="fl">2</span>,</span>
 <span>  requested_action <span class="op">=</span> <span class="st">"activate"</span>,</span>
 <span>  requested_by <span class="op">=</span> <span class="st">"data_analyst"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Clinical lead reviews and approves</span></span>
-<span><span class="fu">ont_approve_request</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_approve_request.html">ont_approve_request</a></span><span class="op">(</span></span>
 <span>  <span class="va">request_id</span>,</span>
 <span>  decided_by <span class="op">=</span> <span class="st">"clinical_director"</span>,</span>
 <span>  decision_notes <span class="op">=</span> <span class="st">"Reviewed v2 definition and audit results. Better captures clinical reality. Approved."</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check gates again</span></span>
-<span><span class="va">gates</span> <span class="op">&lt;-</span> <span class="fu">ont_check_all_gates</span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"operations"</span>, <span class="fl">2</span>, <span class="st">"activation"</span><span class="op">)</span></span>
+<span><span class="va">gates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_check_all_gates.html">ont_check_all_gates</a></span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"operations"</span>, <span class="fl">2</span>, <span class="st">"activation"</span><span class="op">)</span></span>
 <span><span class="va">gates</span><span class="op">$</span><span class="va">overall_passed</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
 <span></span>
@@ -334,7 +334,7 @@ production.</p>
 <p>Now make the data available to downstream systems.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Materialize the active definition for reporting</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">ont_materialize</span><span class="op">(</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_materialize.html">ont_materialize</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"ready_for_discharge"</span>,</span>
 <span>  scope <span class="op">=</span> <span class="st">"operations"</span>,</span>
 <span>  output_table <span class="op">=</span> <span class="st">"rpt_ready_for_discharge"</span></span>
@@ -353,7 +353,7 @@ production.</p>
 <span><span class="co">#&gt; 1         348    4.2</span></span>
 <span></span>
 <span><span class="co"># Get full provenance</span></span>
-<span><span class="va">prov</span> <span class="op">&lt;-</span> <span class="fu">ont_get_provenance</span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">dataset_id</span><span class="op">)</span></span>
+<span><span class="va">prov</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_get_provenance.html">ont_get_provenance</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">dataset_id</span><span class="op">)</span></span>
 <span><span class="va">prov</span><span class="op">$</span><span class="va">concept</span><span class="op">$</span><span class="va">sql_expr</span></span>
 <span><span class="co">#&gt; [1] "NOT has_pending_tests AND NOT has_pending_consults AND discharge_plan_complete"</span></span></code></pre></div>
 <p><strong>What we did</strong>: Created a production table from the
@@ -393,11 +393,11 @@ exact definition, version, and approval that generated it.</p>
 <span><span class="co">#&gt; v ready_for_discharge@operations v2: OK (8% disagreement, 45 audits)</span></span>
 <span></span>
 <span><span class="co"># Record observations for trend analysis</span></span>
-<span><span class="fu">ont_observe</span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"operations"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_observe.html">ont_observe</a></span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"operations"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Recorded observation: 348 of 1000 (34.8% prevalence)</span></span>
 <span></span>
 <span><span class="co"># View trend over time</span></span>
-<span><span class="va">trends</span> <span class="op">&lt;-</span> <span class="fu">ont_trend_analysis</span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"operations"</span><span class="op">)</span></span>
+<span><span class="va">trends</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_trend_analysis.html">ont_trend_analysis</a></span><span class="op">(</span><span class="st">"ready_for_discharge"</span>, <span class="st">"operations"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Shows prevalence over time - useful for spotting data quality issues</span></span></code></pre></div>
 <p><strong>What we did</strong>: Set up ongoing monitoring. We’re
 tracking audit results over time and recording observations. If the
@@ -487,7 +487,7 @@ process that produced it.</p>
 <tr class="odd">
 <td>Setup</td>
 <td>
-<code><a href="../reference/ont_connect.html">ont_connect()</a></code>, <code>ont_register_dataset()</code>,
+<code><a href="../reference/ont_connect.html">ont_connect()</a></code>, <code><a href="../reference/ont_register_dataset.html">ont_register_dataset()</a></code>,
 <code><a href="../reference/ont_register_object.html">ont_register_object()</a></code>
 </td>
 </tr>
@@ -515,23 +515,23 @@ process that produced it.</p>
 <tr class="odd">
 <td>Govern</td>
 <td>
-<code>ont_check_all_gates()</code>,
-<code>ont_request_approval()</code>, <code>ont_approve_request()</code>,
+<code><a href="../reference/ont_check_all_gates.html">ont_check_all_gates()</a></code>,
+<code><a href="../reference/ont_request_approval.html">ont_request_approval()</a></code>, <code><a href="../reference/ont_approve_request.html">ont_approve_request()</a></code>,
 <code><a href="../reference/ont_activate_version.html">ont_activate_version()</a></code>
 </td>
 </tr>
 <tr class="even">
 <td>Materialize</td>
 <td>
-<code>ont_materialize()</code>,
-<code>ont_get_provenance()</code>
+<code><a href="../reference/ont_materialize.html">ont_materialize()</a></code>,
+<code><a href="../reference/ont_get_provenance.html">ont_get_provenance()</a></code>
 </td>
 </tr>
 <tr class="odd">
 <td>Monitor</td>
 <td>
-<code><a href="../reference/ont_detect_drift.html">ont_detect_drift()</a></code>, <code>ont_observe()</code>,
-<code>ont_trend_analysis()</code>
+<code><a href="../reference/ont_detect_drift.html">ont_detect_drift()</a></code>, <code><a href="../reference/ont_observe.html">ont_observe()</a></code>,
+<code><a href="../reference/ont_trend_analysis.html">ont_trend_analysis()</a></code>
 </td>
 </tr>
 </tbody>

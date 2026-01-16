@@ -38,7 +38,7 @@ ont_check_drift(
 
 - min_audits:
 
-  Integer . Minimum audits required before checking. Default 10.
+  Integer. Minimum audits required before checking. Default 10.
 
 - window_days:
 

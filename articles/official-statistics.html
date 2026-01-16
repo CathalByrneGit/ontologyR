@@ -154,7 +154,7 @@ to manage definitions for the Labour Force Survey (LFS), ensuring:</p>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Register source dataset</span></span>
-<span><span class="fu">ont_register_dataset</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_register_dataset.html">ont_register_dataset</a></span><span class="op">(</span></span>
 <span>  dataset_id <span class="op">=</span> <span class="st">"ds_lfs_respondents"</span>,</span>
 <span>  dataset_name <span class="op">=</span> <span class="st">"Labour Force Survey Respondents"</span>,</span>
 <span>  physical_name <span class="op">=</span> <span class="st">"lfs_respondents"</span>,</span>
@@ -499,7 +499,7 @@ gates.</p>
 </h3>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create a custom gate for statistical publications</span></span>
-<span><span class="fu">ont_create_gate</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_create_gate.html">ont_create_gate</a></span><span class="op">(</span></span>
 <span>  gate_id <span class="op">=</span> <span class="st">"gate_statistical_quality"</span>,</span>
 <span>  gate_name <span class="op">=</span> <span class="st">"Statistical Quality Standards"</span>,</span>
 <span>  gate_type <span class="op">=</span> <span class="st">"audit_coverage"</span>,</span>
@@ -513,7 +513,7 @@ gates.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Require methodology committee approval</span></span>
-<span><span class="fu">ont_create_gate</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_create_gate.html">ont_create_gate</a></span><span class="op">(</span></span>
 <span>  gate_id <span class="op">=</span> <span class="st">"gate_methodology_approval"</span>,</span>
 <span>  gate_name <span class="op">=</span> <span class="st">"Methodology Committee Sign-off"</span>,</span>
 <span>  gate_type <span class="op">=</span> <span class="st">"approval_required"</span>,</span>
@@ -531,7 +531,7 @@ gates.</p>
 </h3>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check if v2 unemployment can be activated</span></span>
-<span><span class="va">gates</span> <span class="op">&lt;-</span> <span class="fu">ont_check_all_gates</span><span class="op">(</span><span class="st">"unemployed"</span>, <span class="st">"ilo_standard"</span>, <span class="fl">2</span>, <span class="st">"activation"</span><span class="op">)</span></span>
+<span><span class="va">gates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_check_all_gates.html">ont_check_all_gates</a></span><span class="op">(</span><span class="st">"unemployed"</span>, <span class="st">"ilo_standard"</span>, <span class="fl">2</span>, <span class="st">"activation"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">gates</span><span class="op">$</span><span class="va">overall_passed</span></span>
 <span><span class="co">#&gt; [1] FALSE</span></span>
@@ -550,7 +550,7 @@ gates.</p>
 <span><span class="co"># ... expert review process ...</span></span>
 <span></span>
 <span><span class="co"># Request methodology committee approval</span></span>
-<span><span class="fu">ont_request_approval</span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/ont_request_approval.html">ont_request_approval</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"unemployed"</span>,</span>
 <span>  scope <span class="op">=</span> <span class="st">"ilo_standard"</span>,</span>
 <span>  version <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -560,13 +560,13 @@ gates.</p>
 <span><span class="co">#&gt; v Created approval request: REQ-20250116-abc123</span></span>
 <span></span>
 <span><span class="co"># Committee members review and approve</span></span>
-<span><span class="fu">ont_approve_request</span><span class="op">(</span><span class="st">"REQ-20250116-abc123"</span>, <span class="st">"chief_methodologist"</span>,</span>
+<span><span class="fu"><a href="../reference/ont_approve_request.html">ont_approve_request</a></span><span class="op">(</span><span class="st">"REQ-20250116-abc123"</span>, <span class="st">"chief_methodologist"</span>,</span>
 <span>                     <span class="st">"Reviewed v2 changes. Aligns with ILO guidance on zero-hours contracts."</span><span class="op">)</span></span>
-<span><span class="fu">ont_approve_request</span><span class="op">(</span><span class="st">"REQ-20250116-def456"</span>, <span class="st">"division_head"</span>,</span>
+<span><span class="fu"><a href="../reference/ont_approve_request.html">ont_approve_request</a></span><span class="op">(</span><span class="st">"REQ-20250116-def456"</span>, <span class="st">"division_head"</span>,</span>
 <span>                     <span class="st">"Approved. Impact analysis shows minimal effect on headline rate."</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Now gates pass</span></span>
-<span><span class="va">gates</span> <span class="op">&lt;-</span> <span class="fu">ont_check_all_gates</span><span class="op">(</span><span class="st">"unemployed"</span>, <span class="st">"ilo_standard"</span>, <span class="fl">2</span>, <span class="st">"activation"</span><span class="op">)</span></span>
+<span><span class="va">gates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_check_all_gates.html">ont_check_all_gates</a></span><span class="op">(</span><span class="st">"unemployed"</span>, <span class="st">"ilo_standard"</span>, <span class="fl">2</span>, <span class="st">"activation"</span><span class="op">)</span></span>
 <span><span class="va">gates</span><span class="op">$</span><span class="va">overall_passed</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
 <span></span>
@@ -581,7 +581,7 @@ gates.</p>
 <p>Official statistics need reproducible, point-in-time outputs.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Materialize unemployment classifications for Q4 2024 publication</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">ont_materialize</span><span class="op">(</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_materialize.html">ont_materialize</a></span><span class="op">(</span></span>
 <span>  concept_id <span class="op">=</span> <span class="st">"unemployed"</span>,</span>
 <span>  scope <span class="op">=</span> <span class="st">"ilo_standard"</span>,</span>
 <span>  filter_expr <span class="op">=</span> <span class="st">"survey_wave = '2024Q4'"</span>,</span>
@@ -594,7 +594,7 @@ gates.</p>
 <span></span>
 <span><span class="co"># Materialize all labour force concepts for the publication</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">concept</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"employed"</span>, <span class="st">"unemployed"</span>, <span class="st">"in_labour_force"</span>, <span class="st">"underemployed"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu">ont_materialize</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/ont_materialize.html">ont_materialize</a></span><span class="op">(</span></span>
 <span>    concept_id <span class="op">=</span> <span class="va">concept</span>,</span>
 <span>    scope <span class="op">=</span> <span class="st">"national_headline"</span>,</span>
 <span>    filter_expr <span class="op">=</span> <span class="st">"survey_wave = '2024Q4'"</span>,</span>
@@ -630,7 +630,7 @@ gates.</p>
 back.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># "Where did the 9.7% unemployment rate come from?"</span></span>
-<span><span class="va">prov</span> <span class="op">&lt;-</span> <span class="fu">ont_get_provenance</span><span class="op">(</span><span class="st">"DS-pub_unemployed_2024q4"</span><span class="op">)</span></span>
+<span><span class="va">prov</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ont_get_provenance.html">ont_get_provenance</a></span><span class="op">(</span><span class="st">"DS-pub_unemployed_2024q4"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># What definition was used?</span></span>
 <span><span class="va">prov</span><span class="op">$</span><span class="va">concept</span></span>
@@ -651,7 +651,7 @@ back.</p>
 <span><span class="co">#&gt; [1] "2025-01-15 09:30:00"</span></span>
 <span></span>
 <span><span class="co"># Who approved this definition?</span></span>
-<span><span class="fu">ont_get_gate_history</span><span class="op">(</span><span class="st">"unemployed"</span>, <span class="st">"ilo_standard"</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_get_gate_history.html">ont_get_gate_history</a></span><span class="op">(</span><span class="st">"unemployed"</span>, <span class="st">"ilo_standard"</span>, <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Shows approval chain with timestamps and approvers</span></span>
 <span></span>
 <span><span class="co"># What was the audit quality?</span></span>
@@ -659,7 +659,7 @@ back.</p>
 <span><span class="co">#&gt; Shows 92% expert agreement</span></span>
 <span></span>
 <span><span class="co"># Full lineage</span></span>
-<span><span class="fu">ont_get_upstream</span><span class="op">(</span><span class="st">"DS-pub_unemployed_2024q4"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ont_get_upstream.html">ont_get_upstream</a></span><span class="op">(</span><span class="st">"DS-pub_unemployed_2024q4"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; DS-lfs_respondents -&gt; DS-pub_unemployed_2024q4</span></span></code></pre></div>
 <hr>
 </div>

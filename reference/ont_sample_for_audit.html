@@ -119,9 +119,8 @@ regardless of concept value, or <code>NA</code> to sample where concept is FALSE
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="ont_connect.html">ont_connect</a></span><span class="op">(</span><span class="st">":memory:"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Schema file parsing failed, using inline creation: Extension Autoloading Error: An error occurred while trying to automatically install the required extension 'icu': Extension "/home/runner/.local/share/R/duckdb/extensions/v1.4.3/linux_amd64/icu.duckdb_extension" not found. Extension "icu" is an existing extension.  Install it first using "INSTALL icu". <span style="color: #0000BB;">ℹ</span> Context: rapi_prepare <span style="color: #0000BB;">ℹ</span> Error type: AUTOLOAD</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Connected to ontology database: '<span style="color: #0000BB;">:memory:</span>'</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="ont_connect.html">ont_connect</a></span><span class="op">(</span><span class="st">":memory:"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># ... setup ...</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Sample 20 cases that the system says are "ready for discharge"</span></span></span>
@@ -131,7 +130,7 @@ regardless of concept value, or <code>NA</code> to sample where concept is FALSE
 <span class="r-in"><span>    n <span class="op">=</span> <span class="fl">20</span>,</span></span>
 <span class="r-in"><span>    concept_value <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in ont_get_active_version(concept_id, scope, con = con):</span> No active version found for <span style="color: #0000BB;">"ready_for_discharge"</span>@flow</span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
