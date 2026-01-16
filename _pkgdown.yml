@@ -43,6 +43,8 @@ navbar:
           href: articles/transforms-and-lineage.html
         - text: Governance Gates
           href: articles/governance-gates.html
+        - text: Templates and Inheritance
+          href: articles/templates-and-inheritance.html
         - text: "---"
         - text: "Complete Examples"
         - text: End-to-End Workflow (Healthcare)
