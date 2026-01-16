@@ -210,3 +210,7 @@ ont_compare_versions("ready_for_discharge", "flow", 1, 2)
 ## Next Steps
 
 - See `vignette("what-is-an-ontology")` for a conceptual overview with analogies
+- See `vignette("datasets-and-materialization")` for registering datasets and materializing concepts
+- See `vignette("transforms-and-lineage")` for building data pipelines with lineage tracking
+- See `vignette("governance-gates")` for access control and quality gates
+- See `vignette("end-to-end-workflow")` for a complete worked example
