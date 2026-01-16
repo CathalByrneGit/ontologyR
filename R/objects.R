@@ -22,6 +22,7 @@ NULL
 #' @return Invisibly returns `TRUE` on success.
 #'
 #' @examples
+#' \dontrun{
 #' ont_connect(":memory:")
 #'
 #' # Register an Encounter object type
@@ -37,6 +38,7 @@ NULL
 #' ont_list_objects()
 #'
 #' ont_disconnect()
+#' }
 #'
 #' @export
 ont_register_object <- function(object_type,
@@ -139,6 +141,7 @@ ont_get_object <- function(object_type, con = NULL) {
 #' @return Invisibly returns `TRUE` on success.
 #'
 #' @examples
+#' \dontrun{
 #' ont_connect(":memory:")
 #'
 #' # Register object types first
@@ -157,6 +160,7 @@ ont_get_object <- function(object_type, con = NULL) {
 #' )
 #'
 #' ont_disconnect()
+#' }
 #'
 #' @export
 ont_register_link <- function(link_type,

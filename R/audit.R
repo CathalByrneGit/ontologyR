@@ -25,6 +25,7 @@ NULL
 #' @return A tibble of sampled objects with their concept values.
 #'
 #' @examples
+#' \dontrun{
 #' ont_connect(":memory:")
 #' # ... setup ...
 #'
@@ -35,6 +36,7 @@ NULL
 #'     n = 20,
 #'     concept_value = TRUE
 #' )
+#' }
 #'
 #' @export
 ont_sample_for_audit <- function(concept_id,

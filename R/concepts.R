@@ -22,6 +22,7 @@ NULL
 #' @return Invisibly returns `TRUE` on success.
 #'
 #' @examples
+#' \dontrun{
 #' ont_connect(":memory:")
 #' ont_register_object("Encounter", "encounters", "encounter_id")
 #'
@@ -34,6 +35,7 @@ NULL
 #' )
 #'
 #' ont_disconnect()
+#' }
 #'
 #' @export
 ont_define_concept <- function(concept_id,
@@ -102,6 +104,7 @@ ont_define_concept <- function(concept_id,
 #' @return Invisibly returns `TRUE` on success.
 #'
 #' @examples
+#' \dontrun{
 #' ont_connect(":memory:")
 #' ont_register_object("Encounter", "encounters", "encounter_id")
 #' ont_define_concept("ready_for_discharge", "Encounter")
@@ -127,6 +130,7 @@ ont_define_concept <- function(concept_id,
 #' )
 #'
 #' ont_disconnect()
+#' }
 #'
 #' @export
 ont_add_version <- function(concept_id,

@@ -38,6 +38,7 @@ NULL
 #'   prevalence rate.
 #'
 #' @examples
+#' \dontrun{
 #' ont_connect(":memory:")
 #' # ... setup ...
 #'
@@ -55,6 +56,7 @@ NULL
 #'   filter_expr = "ward = 'ICU'",
 #'   notes = "ICU-specific observation"
 #' )
+#' }
 #'
 #' @export
 ont_observe <- function(concept_id,
@@ -231,6 +233,7 @@ ont_get_observation_details <- function(observation_id, con = NULL) {
 #' @return Invisibly returns the cohort_id.
 #'
 #' @examples
+#' \dontrun{
 #' # Define a cohort of ICU patients
 #' ont_define_cohort(
 #'   cohort_id = "icu_patients",
@@ -238,6 +241,7 @@ ont_get_observation_details <- function(observation_id, con = NULL) {
 #'   object_type = "Encounter",
 #'   sql_expr = "ward = 'ICU'"
 #' )
+#' }
 #'
 #' @export
 ont_define_cohort <- function(cohort_id,
