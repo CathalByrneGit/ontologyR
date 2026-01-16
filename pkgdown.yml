@@ -7,9 +7,10 @@ articles:
   governance-gates: governance-gates.html
   introduction: introduction.html
   official-statistics: official-statistics.html
+  templates-and-inheritance: templates-and-inheritance.html
   transforms-and-lineage: transforms-and-lineage.html
   what-is-an-ontology: what-is-an-ontology.html
-last_built: 2026-01-16T10:52Z
+last_built: 2026-01-16T22:11Z
 urls:
   reference: https://cathalbyrnegit.github.io/ontologyR/reference
   article: https://cathalbyrnegit.github.io/ontologyR/articles

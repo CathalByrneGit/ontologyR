@@ -137,6 +137,77 @@ ont_drift_status()
 | **Audit**       | A human judgment comparing system evaluation to ground truth      |
 | **Drift**       | When disagreement rate exceeds threshold                          |
 
+## Concept Templates
+
+Templates let you define a **base concept** that can be **inherited** by
+scope-specific variants. This is perfect for standards like ILO
+unemployment definitions where different countries have local
+adaptations.
+
+``` r
+# Define an ILO unemployment template
+ont_define_template(
+  template_id = "ilo_unemployed",
+  template_name = "ILO Unemployment Definition",
+  object_type = "Person",
+  base_sql_expr = "age >= {{min_age}} AND age <= {{max_age}} AND NOT employed AND seeking_work",
+  parameters = list(
+    min_age = list(default = 15, type = "integer"),
+    max_age = list(default = 74, type = "integer")
+  ),
+  source_standard = "ILO"
+)
+
+# Create country-specific variants
+ont_inherit_concept("unemployed_us", "ilo_unemployed", "united_states",
+  parameter_values = list(min_age = 16, max_age = 65),
+  deviation_notes = "US uses 16-65 age range per BLS")
+
+ont_inherit_concept("unemployed_ireland", "ilo_unemployed", "ireland",
+  parameter_values = list(min_age = 15, max_age = 66))
+
+# Compare all variants
+ont_compare_template_variants("ilo_unemployed")
+```
+
+## Interactive Shiny Apps
+
+ontologyR includes three Shiny applications for interactive exploration
+and management:
+
+### Ontology Explorer
+
+Browse concepts, templates, audits, and governance information:
+
+``` r
+ont_run_explorer()
+# Or point to a specific database:
+ont_run_explorer(db_path = "my_ontology.duckdb")
+```
+
+### Definition Builder
+
+Visual SQL builder for non-technical users to create concept
+definitions:
+
+``` r
+ont_run_definition_builder()
+```
+
+### Lineage Viewer
+
+Interactive DAG visualization of datasets and transforms:
+
+``` r
+ont_run_lineage_viewer()
+```
+
+List all available apps:
+
+``` r
+ont_list_apps()
+```
+
 ## API Reference
 
 ### Top-level Entry Points
@@ -255,6 +326,36 @@ ont$disconnect()
 - [`ont_governance_report()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_governance_report.md)
   — Generate status report
 
+### Templates
+
+- [`ont_define_template()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_define_template.md)
+  — Create a reusable template with parameters
+- [`ont_inherit_concept()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_inherit_concept.md)
+  — Create concept from template with custom parameters
+- [`ont_get_template()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_template.md)
+  — Retrieve template details
+- [`ont_list_templates()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_templates.md)
+  — List all templates
+- [`ont_get_template_variants()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_template_variants.md)
+  — List concepts derived from a template
+- [`ont_compare_template_variants()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_compare_template_variants.md)
+  — Compare parameter values across variants
+- [`ont_render_template()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_render_template.md)
+  — Preview SQL with parameter substitution
+- [`ont_get_concept_inheritance()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_concept_inheritance.md)
+  — Get template lineage for a concept
+
+### Interactive Apps
+
+- [`ont_run_explorer()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_run_explorer.md)
+  — Launch Ontology Explorer (browse concepts, templates, audits)
+- [`ont_run_definition_builder()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_run_definition_builder.md)
+  — Launch Definition Builder (visual SQL builder)
+- [`ont_run_lineage_viewer()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_run_lineage_viewer.md)
+  — Launch Lineage Viewer (DAG visualization)
+- [`ont_list_apps()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_apps.md)
+  — List available Shiny apps
+
 ## Design Principles
 
 1.  **Definitions are hypotheses** — test them, don’t assume they’re
@@ -273,6 +374,10 @@ ont$disconnect()
   — a plain-English guide with bakery analogies
 - [`vignette("introduction")`](https://cathalbyrnegit.github.io/ontologyR/articles/introduction.md)
   — Code examples and API walkthrough
+- [`vignette("templates-and-inheritance")`](https://cathalbyrnegit.github.io/ontologyR/articles/templates-and-inheritance.md)
+  — Creating reusable concept templates
+- [`vignette("official-statistics")`](https://cathalbyrnegit.github.io/ontologyR/articles/official-statistics.md)
+  — Working with statistical standards (ILO, OECD)
 
 ## Design Notes: Tables vs. Classes
 
@@ -402,6 +507,8 @@ MIT
   : Cohort Comparison
 - [`ont_compare_runs()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_compare_runs.md)
   : Compare Runs
+- [`ont_compare_template_variants()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_compare_template_variants.md)
+  : Compare Template Variants
 - [`ont_compare_versions()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_compare_versions.md)
   : Compare Concept Versions
 - [`ont_connect()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_connect.md)
@@ -414,6 +521,8 @@ MIT
   : Define a Cohort
 - [`ont_define_concept()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_define_concept.md)
   : Define a New Concept
+- [`ont_define_template()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_define_template.md)
+  : Define a Concept Template
 - [`ont_define_transform()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_define_transform.md)
   : Define a Transform
 - [`ont_deprecate_version()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_deprecate_version.md)
@@ -438,6 +547,8 @@ MIT
   : Get Audit History
 - [`ont_get_cohort_members()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_cohort_members.md)
   : Get Cohort Members
+- [`ont_get_concept_inheritance()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_concept_inheritance.md)
+  : Get Concept Inheritance
 - [`ont_get_dataset()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_dataset.md)
   : Get Dataset Metadata
 - [`ont_get_dataset_runs()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_dataset_runs.md)
@@ -462,6 +573,10 @@ MIT
   : Get Role Details
 - [`ont_get_run()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_run.md)
   : Get Run Details
+- [`ont_get_template()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_template.md)
+  : Get Template Details
+- [`ont_get_template_variants()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_template_variants.md)
+  : Get Template Variants
 - [`ont_get_transform()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_transform.md)
   : Get Transform Details
 - [`ont_get_transform_dag()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_transform_dag.md)
@@ -478,8 +593,12 @@ MIT
   : Grant Role to User
 - [`ont_import_json()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_import_json.md)
   : Import Ontology from JSON
+- [`ont_inherit_concept()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_inherit_concept.md)
+  : Create a Concept from Template
 - [`ont_list_analyses()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_analyses.md)
   : List Analysis Runs
+- [`ont_list_apps()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_apps.md)
+  : Check Available Shiny Apps
 - [`ont_list_cohorts()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_cohorts.md)
   : List Cohorts
 - [`ont_list_concepts()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_concepts.md)
@@ -504,6 +623,8 @@ MIT
   : List Available Roles
 - [`ont_list_runs()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_runs.md)
   : List Runs
+- [`ont_list_templates()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_templates.md)
+  : List All Templates
 - [`ont_list_transforms()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_transforms.md)
   : List Transforms
 - [`ont_list_versions()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_versions.md)
@@ -536,6 +657,8 @@ MIT
   : Reject Request
 - [`ont_remove_transform_input()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_remove_transform_input.md)
   : Remove Transform Input
+- [`ont_render_template()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_render_template.md)
+  : Render Template SQL
 - [`ont_request_approval()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_request_approval.md)
   : Request Approval
 - [`ont_require_permission()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_require_permission.md)
@@ -546,6 +669,12 @@ MIT
   : Revoke Role from User
 - [`ont_rolling_disagreement()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_rolling_disagreement.md)
   : Compute Rolling Disagreement Rate
+- [`ont_run_definition_builder()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_run_definition_builder.md)
+  : Run Definition Builder Shiny App
+- [`ont_run_explorer()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_run_explorer.md)
+  : Run Ontology Explorer Shiny App
+- [`ont_run_lineage_viewer()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_run_lineage_viewer.md)
+  : Run Lineage Visualizer Shiny App
 - [`ont_sample_for_audit()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_sample_for_audit.md)
   : Sample Objects for Audit
 - [`ont_sql()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_sql.md)
@@ -568,6 +697,10 @@ MIT
   : Create an Ontology Object
 - [`rbac`](https://cathalbyrnegit.github.io/ontologyR/reference/rbac.md)
   : RBAC-lite and Governance Gates
+- [`shiny-apps`](https://cathalbyrnegit.github.io/ontologyR/reference/shiny-apps.md)
+  : Shiny Applications
+- [`templates`](https://cathalbyrnegit.github.io/ontologyR/reference/templates.md)
+  : Concept Templates
 - [`transforms`](https://cathalbyrnegit.github.io/ontologyR/reference/transforms.md)
   : Transform Management and Execution
 - [`utils`](https://cathalbyrnegit.github.io/ontologyR/reference/utils.md)
@@ -590,6 +723,8 @@ MIT
   Lineage](https://cathalbyrnegit.github.io/ontologyR/articles/transforms-and-lineage.md):
 - [Governance Gates and Access
   Control](https://cathalbyrnegit.github.io/ontologyR/articles/governance-gates.md):
+- [Concept Templates and
+  Inheritance](https://cathalbyrnegit.github.io/ontologyR/articles/templates-and-inheritance.md):
 
 ### Putting It All Together
 

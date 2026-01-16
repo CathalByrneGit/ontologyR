@@ -46,6 +46,8 @@
   : Cohort Comparison
 - [`ont_compare_runs()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_compare_runs.md)
   : Compare Runs
+- [`ont_compare_template_variants()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_compare_template_variants.md)
+  : Compare Template Variants
 - [`ont_compare_versions()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_compare_versions.md)
   : Compare Concept Versions
 - [`ont_connect()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_connect.md)
@@ -58,6 +60,8 @@
   : Define a Cohort
 - [`ont_define_concept()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_define_concept.md)
   : Define a New Concept
+- [`ont_define_template()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_define_template.md)
+  : Define a Concept Template
 - [`ont_define_transform()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_define_transform.md)
   : Define a Transform
 - [`ont_deprecate_version()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_deprecate_version.md)
@@ -82,6 +86,8 @@
   : Get Audit History
 - [`ont_get_cohort_members()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_cohort_members.md)
   : Get Cohort Members
+- [`ont_get_concept_inheritance()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_concept_inheritance.md)
+  : Get Concept Inheritance
 - [`ont_get_dataset()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_dataset.md)
   : Get Dataset Metadata
 - [`ont_get_dataset_runs()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_dataset_runs.md)
@@ -106,6 +112,10 @@
   : Get Role Details
 - [`ont_get_run()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_run.md)
   : Get Run Details
+- [`ont_get_template()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_template.md)
+  : Get Template Details
+- [`ont_get_template_variants()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_template_variants.md)
+  : Get Template Variants
 - [`ont_get_transform()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_transform.md)
   : Get Transform Details
 - [`ont_get_transform_dag()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_transform_dag.md)
@@ -122,8 +132,12 @@
   : Grant Role to User
 - [`ont_import_json()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_import_json.md)
   : Import Ontology from JSON
+- [`ont_inherit_concept()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_inherit_concept.md)
+  : Create a Concept from Template
 - [`ont_list_analyses()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_analyses.md)
   : List Analysis Runs
+- [`ont_list_apps()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_apps.md)
+  : Check Available Shiny Apps
 - [`ont_list_cohorts()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_cohorts.md)
   : List Cohorts
 - [`ont_list_concepts()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_concepts.md)
@@ -148,6 +162,8 @@
   : List Available Roles
 - [`ont_list_runs()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_runs.md)
   : List Runs
+- [`ont_list_templates()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_templates.md)
+  : List All Templates
 - [`ont_list_transforms()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_transforms.md)
   : List Transforms
 - [`ont_list_versions()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_versions.md)
@@ -180,6 +196,8 @@
   : Reject Request
 - [`ont_remove_transform_input()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_remove_transform_input.md)
   : Remove Transform Input
+- [`ont_render_template()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_render_template.md)
+  : Render Template SQL
 - [`ont_request_approval()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_request_approval.md)
   : Request Approval
 - [`ont_require_permission()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_require_permission.md)
@@ -190,6 +208,12 @@
   : Revoke Role from User
 - [`ont_rolling_disagreement()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_rolling_disagreement.md)
   : Compute Rolling Disagreement Rate
+- [`ont_run_definition_builder()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_run_definition_builder.md)
+  : Run Definition Builder Shiny App
+- [`ont_run_explorer()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_run_explorer.md)
+  : Run Ontology Explorer Shiny App
+- [`ont_run_lineage_viewer()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_run_lineage_viewer.md)
+  : Run Lineage Visualizer Shiny App
 - [`ont_sample_for_audit()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_sample_for_audit.md)
   : Sample Objects for Audit
 - [`ont_sql()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_sql.md)
@@ -212,6 +236,10 @@
   : Create an Ontology Object
 - [`rbac`](https://cathalbyrnegit.github.io/ontologyR/reference/rbac.md)
   : RBAC-lite and Governance Gates
+- [`shiny-apps`](https://cathalbyrnegit.github.io/ontologyR/reference/shiny-apps.md)
+  : Shiny Applications
+- [`templates`](https://cathalbyrnegit.github.io/ontologyR/reference/templates.md)
+  : Concept Templates
 - [`transforms`](https://cathalbyrnegit.github.io/ontologyR/reference/transforms.md)
   : Transform Management and Execution
 - [`utils`](https://cathalbyrnegit.github.io/ontologyR/reference/utils.md)

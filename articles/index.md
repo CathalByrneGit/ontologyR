@@ -15,6 +15,8 @@
   Lineage](https://cathalbyrnegit.github.io/ontologyR/articles/transforms-and-lineage.md):
 - [Governance Gates and Access
   Control](https://cathalbyrnegit.github.io/ontologyR/articles/governance-gates.md):
+- [Concept Templates and
+  Inheritance](https://cathalbyrnegit.github.io/ontologyR/articles/templates-and-inheritance.md):
 
 ### Putting It All Together
 

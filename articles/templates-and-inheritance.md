@@ -1,0 +1,298 @@
+# Concept Templates and Inheritance
+
+## The Problem: Definition Variants
+
+Many data definitions follow a common pattern but have scope-specific
+variations. Consider unemployment:
+
+- The **ILO (International Labour Organization)** defines unemployment
+  as: people aged 15-74 who are not employed, seeking work, and
+  available to start within 2 weeks
+- **United States (BLS)**: Uses ages 16-65
+- **Ireland (CSO)**: Uses ages 15-66
+- **United Kingdom (ONS)**: Uses ages 16-64
+
+These are all “unemployment” definitions derived from the same standard,
+but with local adaptations. Without templates, you’d copy-paste the SQL
+expression for each variant—leading to maintenance nightmares and
+inconsistency.
+
+## Templates: The Solution
+
+ontologyR **templates** let you define a base concept with
+**parameters** that variants can customize:
+
+``` r
+library(ontologyR)
+ont_connect(":memory:")
+
+# Register the object type
+ont_register_object("Person", "labour_force_survey", "person_id")
+
+# Define the ILO template with customizable age parameters
+ont_define_template(
+  template_id = "ilo_unemployed",
+  template_name = "ILO Unemployment Definition",
+  object_type = "Person",
+  base_sql_expr = "age >= {{min_age}} AND age <= {{max_age}} AND NOT employed AND seeking_work AND available_in_weeks <= {{availability_weeks}}",
+  parameters = list(
+    min_age = list(default = 15, type = "integer", description = "Minimum age for working-age population"),
+    max_age = list(default = 74, type = "integer", description = "Maximum age for working-age population"),
+    availability_weeks = list(default = 2, type = "integer", description = "Must be available within N weeks")
+  ),
+  source_standard = "ILO",
+  description = "International Labour Organization standard definition of unemployment"
+)
+```
+
+The `{{parameter}}` syntax marks placeholders that will be substituted
+when creating variants.
+
+## Creating Variants
+
+Use
+[`ont_inherit_concept()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_inherit_concept.md)
+to create scope-specific variants:
+
+``` r
+# United States variant
+ont_inherit_concept(
+  concept_id = "unemployed_us",
+  template_id = "ilo_unemployed",
+  scope = "united_states",
+  parameter_values = list(min_age = 16, max_age = 65),
+  deviation_notes = "US Bureau of Labor Statistics uses 16-65 age range",
+  inheritance_type = "adapts"
+)
+
+# Ireland variant
+ont_inherit_concept(
+  concept_id = "unemployed_ireland",
+  template_id = "ilo_unemployed",
+  scope = "ireland",
+  parameter_values = list(min_age = 15, max_age = 66),
+  deviation_notes = "CSO Ireland uses 15-66 per national standards"
+)
+
+# UK variant
+ont_inherit_concept(
+  concept_id = "unemployed_uk",
+  template_id = "ilo_unemployed",
+  scope = "united_kingdom",
+  parameter_values = list(min_age = 16, max_age = 64),
+  deviation_notes = "ONS uses 16-64 age range"
+)
+```
+
+Each variant automatically gets:
+
+- A concept defined with the appropriate object type
+- Version 1 with the SQL expression (parameters substituted)
+- A record of which template it inherited from
+
+## Inheritance Types
+
+The `inheritance_type` parameter documents the relationship: -
+`"extends"` (default) — Variant follows template exactly with different
+parameters - `"implements"` — Variant fulfills the template’s contract -
+`"adapts"` — Variant deviates from template for local requirements
+
+## Previewing Template SQL
+
+Use
+[`ont_render_template()`](https://cathalbyrnegit.github.io/ontologyR/reference/ont_render_template.md)
+to see what SQL would be generated:
+
+``` r
+# Preview with default parameters
+ont_render_template("ilo_unemployed")
+#> "age >= 15 AND age <= 74 AND NOT employed AND seeking_work AND available_in_weeks <= 2"
+
+# Preview with custom parameters
+ont_render_template("ilo_unemployed", list(min_age = 18, max_age = 60))
+#> "age >= 18 AND age <= 60 AND NOT employed AND seeking_work AND available_in_weeks <= 2"
+```
+
+## Listing and Comparing Variants
+
+### List all variants of a template
+
+``` r
+variants <- ont_get_template_variants("ilo_unemployed")
+variants
+#>        concept_id    template_id         scope inheritance_type
+#> 1    unemployed_us ilo_unemployed united_states           adapts
+#> 2 unemployed_ireland ilo_unemployed       ireland          extends
+#> 3    unemployed_uk ilo_unemployed united_kingdom          extends
+```
+
+### Compare parameter values across variants
+
+``` r
+comparison <- ont_compare_template_variants("ilo_unemployed")
+comparison
+#>        concept_id         scope param_min_age param_max_age param_availability_weeks
+#> 1    unemployed_us united_states            16            65                        2
+#> 2 unemployed_ireland       ireland            15            66                        2
+#> 3    unemployed_uk united_kingdom            16            64                        2
+```
+
+This comparison table is invaluable for:
+
+- Auditing compliance with standards
+- Understanding regional differences
+- Documenting methodology in reports
+
+## Checking Concept Lineage
+
+For any concept, you can trace back to its template:
+
+``` r
+inheritance <- ont_get_concept_inheritance("unemployed_ireland")
+inheritance
+#>        concept_id    template_id source_standard inheritance_type              deviation_notes
+#> 1 unemployed_ireland ilo_unemployed             ILO          extends CSO Ireland uses 15-66 per national standards
+```
+
+## Working with Templates
+
+### List all templates
+
+``` r
+templates <- ont_list_templates()
+
+# Filter by source standard
+ilo_templates <- ont_list_templates(source_standard = "ILO")
+
+# Filter by object type
+person_templates <- ont_list_templates(object_type = "Person")
+```
+
+### Get template details
+
+``` r
+template <- ont_get_template("ilo_unemployed")
+template$template_name
+#> "ILO Unemployment Definition"
+template$parameters
+#> $min_age
+#> $min_age$default
+#> [1] 15
+#> $min_age$type
+#> [1] "integer"
+```
+
+## Parameter Types
+
+Parameters can be documented with metadata:
+
+``` r
+ont_define_template(
+  template_id = "high_risk_transaction",
+  template_name = "High Risk Transaction",
+  object_type = "Transaction",
+  base_sql_expr = "amount >= {{amount_threshold}} OR risk_score >= {{risk_threshold}}",
+  parameters = list(
+    amount_threshold = list(
+      default = 10000,
+      type = "numeric",
+      description = "Transaction amount threshold",
+      min = 0
+    ),
+    risk_threshold = list(
+      default = 80,
+      type = "integer",
+      description = "Risk score threshold (0-100)",
+      min = 0,
+      max = 100
+    )
+  )
+)
+```
+
+The metadata is stored as JSON and can be used by Shiny apps to render
+appropriate input widgets.
+
+## Templates and Governance
+
+Templates integrate with ontologyR’s governance features:
+
+``` r
+# Each variant can be audited independently
+ont_record_audit("unemployed_ireland", "ireland", 1, "P123", TRUE, TRUE, "economist")
+
+# Drift is tracked per variant
+ont_detect_drift("unemployed_ireland", "ireland")
+
+# Governance actions are logged
+ont_log_governance(
+  action_type = "activate",
+  concept_id = "unemployed_ireland",
+  scope = "ireland",
+  version = 1,
+  actor = "stats_board",
+  rationale = "Approved for Q4 2024 release"
+)
+```
+
+## Use Case: Multiple Standards
+
+Templates are perfect when you need to implement multiple statistical
+standards:
+
+``` r
+# OECD employment template
+ont_define_template(
+  template_id = "oecd_employed",
+  template_name = "OECD Employment Definition",
+  object_type = "Person",
+  base_sql_expr = "worked_hours_week >= {{min_hours}} OR (has_job AND temporarily_absent)",
+  parameters = list(
+    min_hours = list(default = 1, type = "integer")
+  ),
+  source_standard = "OECD"
+)
+
+# Eurostat NEET template
+ont_define_template(
+  template_id = "eurostat_neet",
+  template_name = "Eurostat NEET Definition",
+  object_type = "Person",
+  base_sql_expr = "age >= {{min_age}} AND age <= {{max_age}} AND NOT employed AND NOT in_education AND NOT in_training",
+  parameters = list(
+    min_age = list(default = 15),
+    max_age = list(default = 29)
+  ),
+  source_standard = "Eurostat"
+)
+```
+
+## Best Practices
+
+1.  **Name templates by source** — Use prefixes like `ilo_`, `oecd_`,
+    `internal_`
+
+2.  **Document deviations** — Always explain *why* a variant differs
+    from the template
+
+3.  **Use inheritance types** — `extends` vs `adapts` communicates
+    intent
+
+4.  **Version your templates** — If the base SQL needs to change,
+    consider creating a new template version rather than modifying
+    existing
+
+5.  **Audit at the variant level** — Templates define structure;
+    variants get audited against real data
+
+## Summary
+
+Templates provide:
+
+- **Consistency** — All variants derive from a documented standard
+- **Traceability** — Clear lineage from standard to implementation
+- **Comparability** — Easy to compare parameters across scopes
+- **Maintainability** — Update the template, understand impact on
+  variants
+- **Governance** — Each variant has its own audit trail and drift
+  monitoring

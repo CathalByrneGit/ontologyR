@@ -45,6 +45,7 @@
     <li><a class="dropdown-item" href="articles/datasets-and-materialization.html">Datasets &amp; Materialization</a></li>
     <li><a class="dropdown-item" href="articles/transforms-and-lineage.html">Transforms &amp; Lineage</a></li>
     <li><a class="dropdown-item" href="articles/governance-gates.html">Governance Gates</a></li>
+    <li><a class="dropdown-item" href="articles/templates-and-inheritance.html">Templates and Inheritance</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Complete Examples</h6></li>
     <li><a class="dropdown-item" href="articles/end-to-end-workflow.html">End-to-End Workflow (Healthcare)</a></li>
@@ -230,6 +231,66 @@
 </table>
 </div>
 <div class="section level2">
+<h2 id="concept-templates">Concept Templates<a class="anchor" aria-label="anchor" href="#concept-templates"></a>
+</h2>
+<p>Templates let you define a <strong>base concept</strong> that can be <strong>inherited</strong> by scope-specific variants. This is perfect for standards like ILO unemployment definitions where different countries have local adaptations.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Define an ILO unemployment template</span></span>
+<span><span class="fu"><a href="reference/ont_define_template.html">ont_define_template</a></span><span class="op">(</span></span>
+<span>  template_id <span class="op">=</span> <span class="st">"ilo_unemployed"</span>,</span>
+<span>  template_name <span class="op">=</span> <span class="st">"ILO Unemployment Definition"</span>,</span>
+<span>  object_type <span class="op">=</span> <span class="st">"Person"</span>,</span>
+<span>  base_sql_expr <span class="op">=</span> <span class="st">"age &gt;= {{min_age}} AND age &lt;= {{max_age}} AND NOT employed AND seeking_work"</span>,</span>
+<span>  parameters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    min_age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>default <span class="op">=</span> <span class="fl">15</span>, type <span class="op">=</span> <span class="st">"integer"</span><span class="op">)</span>,</span>
+<span>    max_age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>default <span class="op">=</span> <span class="fl">74</span>, type <span class="op">=</span> <span class="st">"integer"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  source_standard <span class="op">=</span> <span class="st">"ILO"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Create country-specific variants</span></span>
+<span><span class="fu"><a href="reference/ont_inherit_concept.html">ont_inherit_concept</a></span><span class="op">(</span><span class="st">"unemployed_us"</span>, <span class="st">"ilo_unemployed"</span>, <span class="st">"united_states"</span>,</span>
+<span>  parameter_values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>min_age <span class="op">=</span> <span class="fl">16</span>, max_age <span class="op">=</span> <span class="fl">65</span><span class="op">)</span>,</span>
+<span>  deviation_notes <span class="op">=</span> <span class="st">"US uses 16-65 age range per BLS"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/ont_inherit_concept.html">ont_inherit_concept</a></span><span class="op">(</span><span class="st">"unemployed_ireland"</span>, <span class="st">"ilo_unemployed"</span>, <span class="st">"ireland"</span>,</span>
+<span>  parameter_values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>min_age <span class="op">=</span> <span class="fl">15</span>, max_age <span class="op">=</span> <span class="fl">66</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Compare all variants</span></span>
+<span><span class="fu"><a href="reference/ont_compare_template_variants.html">ont_compare_template_variants</a></span><span class="op">(</span><span class="st">"ilo_unemployed"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="interactive-shiny-apps">Interactive Shiny Apps<a class="anchor" aria-label="anchor" href="#interactive-shiny-apps"></a>
+</h2>
+<p>ontologyR includes three Shiny applications for interactive exploration and management:</p>
+<div class="section level3">
+<h3 id="ontology-explorer">Ontology Explorer<a class="anchor" aria-label="anchor" href="#ontology-explorer"></a>
+</h3>
+<p>Browse concepts, templates, audits, and governance information:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/ont_run_explorer.html">ont_run_explorer</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co"># Or point to a specific database:</span></span>
+<span><span class="fu"><a href="reference/ont_run_explorer.html">ont_run_explorer</a></span><span class="op">(</span>db_path <span class="op">=</span> <span class="st">"my_ontology.duckdb"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="definition-builder">Definition Builder<a class="anchor" aria-label="anchor" href="#definition-builder"></a>
+</h3>
+<p>Visual SQL builder for non-technical users to create concept definitions:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/ont_run_definition_builder.html">ont_run_definition_builder</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="lineage-viewer">Lineage Viewer<a class="anchor" aria-label="anchor" href="#lineage-viewer"></a>
+</h3>
+<p>Interactive DAG visualization of datasets and transforms:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/ont_run_lineage_viewer.html">ont_run_lineage_viewer</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>List all available apps:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/ont_list_apps.html">ont_list_apps</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
 <h2 id="api-reference">API Reference<a class="anchor" aria-label="anchor" href="#api-reference"></a>
 </h2>
 <div class="section level3">
@@ -260,7 +321,7 @@
 <div class="section level3">
 <h3 id="object-based-api-ont">Object-based API (<code>ont$...</code>)<a class="anchor" aria-label="anchor" href="#object-based-api-ont"></a>
 </h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ont</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ontology.html">ontology</a></span><span class="op">(</span><span class="st">"path/to/db.duckdb"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Exploration (returns S3 objects)</span></span>
@@ -380,6 +441,42 @@
 <code><a href="reference/ont_governance_report.html">ont_governance_report()</a></code> — Generate status report</li>
 </ul>
 </div>
+<div class="section level3">
+<h3 id="templates">Templates<a class="anchor" aria-label="anchor" href="#templates"></a>
+</h3>
+<ul>
+<li>
+<code><a href="reference/ont_define_template.html">ont_define_template()</a></code> — Create a reusable template with parameters</li>
+<li>
+<code><a href="reference/ont_inherit_concept.html">ont_inherit_concept()</a></code> — Create concept from template with custom parameters</li>
+<li>
+<code><a href="reference/ont_get_template.html">ont_get_template()</a></code> — Retrieve template details</li>
+<li>
+<code><a href="reference/ont_list_templates.html">ont_list_templates()</a></code> — List all templates</li>
+<li>
+<code><a href="reference/ont_get_template_variants.html">ont_get_template_variants()</a></code> — List concepts derived from a template</li>
+<li>
+<code><a href="reference/ont_compare_template_variants.html">ont_compare_template_variants()</a></code> — Compare parameter values across variants</li>
+<li>
+<code><a href="reference/ont_render_template.html">ont_render_template()</a></code> — Preview SQL with parameter substitution</li>
+<li>
+<code><a href="reference/ont_get_concept_inheritance.html">ont_get_concept_inheritance()</a></code> — Get template lineage for a concept</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="interactive-apps">Interactive Apps<a class="anchor" aria-label="anchor" href="#interactive-apps"></a>
+</h3>
+<ul>
+<li>
+<code><a href="reference/ont_run_explorer.html">ont_run_explorer()</a></code> — Launch Ontology Explorer (browse concepts, templates, audits)</li>
+<li>
+<code><a href="reference/ont_run_definition_builder.html">ont_run_definition_builder()</a></code> — Launch Definition Builder (visual SQL builder)</li>
+<li>
+<code><a href="reference/ont_run_lineage_viewer.html">ont_run_lineage_viewer()</a></code> — Launch Lineage Viewer (DAG visualization)</li>
+<li>
+<code><a href="reference/ont_list_apps.html">ont_list_apps()</a></code> — List available Shiny apps</li>
+</ul>
+</div>
 </div>
 <div class="section level2">
 <h2 id="design-principles">Design Principles<a class="anchor" aria-label="anchor" href="#design-principles"></a>
@@ -405,6 +502,10 @@
 <strong>New to ontologies?</strong> Start with <code><a href="articles/what-is-an-ontology.html">vignette("what-is-an-ontology")</a></code> — a plain-English guide with bakery analogies</li>
 <li>
 <code><a href="articles/introduction.html">vignette("introduction")</a></code> — Code examples and API walkthrough</li>
+<li>
+<code><a href="articles/templates-and-inheritance.html">vignette("templates-and-inheritance")</a></code> — Creating reusable concept templates</li>
+<li>
+<code><a href="articles/official-statistics.html">vignette("official-statistics")</a></code> — Working with statistical standards (ILO, OECD)</li>
 </ul>
 </div>
 <div class="section level2">
@@ -482,7 +583,7 @@
 <h3 id="comparison-with-ontologyindex">Comparison with ontologyIndex<a class="anchor" aria-label="anchor" href="#comparison-with-ontologyindex"></a>
 </h3>
 <p><a href="https://cran.r-project.org/package=ontologyIndex" class="external-link">ontologyIndex</a> is excellent for <strong>bio-ontologies</strong> (HPO, GO). Here’s how we differ:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># ontologyIndex: static hierarchy from OBO file</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">hpo</span><span class="op">)</span></span>
 <span><span class="va">hpo</span><span class="op">$</span><span class="va">name</span><span class="op">[[</span><span class="st">"HP:0001250"</span><span class="op">]</span><span class="op">]</span>          <span class="co"># "Seizure"</span></span>

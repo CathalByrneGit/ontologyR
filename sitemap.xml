@@ -8,6 +8,7 @@
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/articles/index.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/articles/introduction.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/articles/official-statistics.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/articles/templates-and-inheritance.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/articles/transforms-and-lineage.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/articles/what-is-an-ontology.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/authors.html</loc></url>
@@ -36,6 +37,7 @@
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_check_policy.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_cohort_compare.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_compare_runs.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_compare_template_variants.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_compare_versions.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_connect.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_create_drift_event.html</loc></url>
@@ -43,6 +45,7 @@
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_create_role.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_define_cohort.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_define_concept.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_define_template.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_define_transform.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_deprecate_version.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_deprecation_impact.html</loc></url>
@@ -57,6 +60,7 @@
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_audits.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_cohort_members.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_concept.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_concept_inheritance.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_connection.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_dataset.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_dataset_runs.html</loc></url>
@@ -72,6 +76,8 @@
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_provenance.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_role.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_run.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_template.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_template_variants.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_transform.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_transform_dag.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_get_transform_inputs.html</loc></url>
@@ -81,8 +87,10 @@
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_governance_report.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_grant_role.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_import_json.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_inherit_concept.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_init_schema.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_analyses.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_apps.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_cohorts.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_concepts.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_dashboards.html</loc></url>
@@ -95,6 +103,7 @@
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_pending_approvals.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_roles.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_runs.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_templates.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_transforms.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_list_versions.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_log_analysis.html</loc></url>
@@ -112,11 +121,15 @@
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_register_object.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_reject_request.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_remove_transform_input.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_render_template.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_request_approval.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_require_permission.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_resolve_drift.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_revoke_role.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_rolling_disagreement.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_run_definition_builder.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_run_explorer.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_run_lineage_viewer.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_sample_for_audit.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_sql.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ont_status.html</loc></url>
@@ -130,6 +143,8 @@
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/ontology.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/print_provenance.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/rbac.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/shiny-apps.html</loc></url>
+<url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/templates.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/transforms.html</loc></url>
 <url><loc>https://cathalbyrnegit.github.io/ontologyR/reference/utils.html</loc></url>
 </urlset>
