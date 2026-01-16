@@ -738,18 +738,24 @@ ont_compare_runs <- function(run_id_1, run_id_2, con = NULL) {
         )
     })
 
+    # Calculate durations
+    duration1 <- as.numeric(difftime(
+        as.POSIXct(run1$ended_at),
+        as.POSIXct(run1$started_at),
+        units = "secs"
+    ))
+    duration2 <- as.numeric(difftime(
+        as.POSIXct(run2$ended_at),
+        as.POSIXct(run2$started_at),
+        units = "secs"
+    ))
+
     list(
         run_1 = run1,
         run_2 = run2,
         same_transform = identical(run1$transform_id, run2$transform_id),
         output_row_diff = (run2$output_row_count %||% 0) - (run1$output_row_count %||% 0),
-        duration_diff = as.numeric(
-            difftime(
-                as.POSIXct(run2$ended_at) - as.POSIXct(run2$started_at),
-                as.POSIXct(run1$ended_at) - as.POSIXct(run1$started_at),
-                units = "secs"
-            )
-        ),
+        duration_diff = duration2 - duration1,
         input_changes = input_changes
     )
 }
