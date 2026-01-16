@@ -64,12 +64,16 @@ test_that("full concept lifecycle: define -> version -> audit -> drift -> govern
     expect_equal(nrow(result), 5)
     expect_true("concept_value" %in% names(result))
 
-    # Count TRUE values (patients 1, 4 should match: los >= 2 AND age < 75)
+    # Count TRUE values (patients with los >= 2 AND age < 75)
+    # Patient 1: 65 < 75, los 3 >= 2 → TRUE
+    # Patient 2: 45 < 75, los 1 < 2 → FALSE
+    # Patient 3: 72 < 75, los 5 >= 2 → TRUE
+    # Patient 4: 30 < 75, los 2 >= 2 → TRUE
+    # Patient 5: 80 >= 75 → FALSE
     true_count <- sum(result$concept_value, na.rm = TRUE)
-    expect_equal(true_count, 2)
+    expect_equal(true_count, 3)
 
     # 5. Record audits (simulate human review)
-    # Patient 1: system says TRUE, reviewer agrees
     ont_record_audit(
         concept_id = "ready_for_discharge",
         scope = "clinical",
@@ -80,26 +84,25 @@ test_that("full concept lifecycle: define -> version -> audit -> drift -> govern
         reviewer_id = "dr_smith"
     )
 
-    # Patient 3: system says FALSE, reviewer disagrees (drift!)
     ont_record_audit(
         concept_id = "ready_for_discharge",
         scope = "clinical",
         version = 1,
         object_key = "3",
-        system_value = FALSE,
-        reviewer_value = TRUE,  # Reviewer thinks patient IS ready
+        system_value = TRUE,
+        reviewer_value = FALSE,  # Reviewer disagrees
         reviewer_id = "dr_smith",
-        notes = "Patient stable despite age"
+        notes = "Patient too unstable"
     )
 
-    # 6. Check drift
-    drift <- ont_check_drift("ready_for_discharge", "clinical", 1)
-    expect_equal(drift$total_audits, 2)
-    expect_equal(drift$disagreements, 1)
-    expect_equal(drift$disagreement_rate, 0.5)
+    # 6. Check audit summary
+    summary <- ont_audit_summary("ready_for_discharge", "clinical", 1)
+    expect_equal(summary$total_audits, 2)
+    expect_equal(summary$disagreements, 1)
+    expect_equal(summary$disagreement_rate, 0.5)
 
-    # 7. Governance action: activate with rationale
-    ont_governance_action(
+    # 7. Governance action: log activation
+    ont_log_governance(
         action_type = "activate",
         concept_id = "ready_for_discharge",
         scope = "clinical",
@@ -107,6 +110,9 @@ test_that("full concept lifecycle: define -> version -> audit -> drift -> govern
         actor = "governance_board",
         rationale = "Approved after clinical review"
     )
+
+    # Activate the version
+    ont_activate_version("ready_for_discharge", "clinical", 1)
 
     # Verify status changed
     updated_version <- ont_get_version("ready_for_discharge", "clinical", 1)
@@ -217,14 +223,10 @@ test_that("template inheritance workflow: define template -> create variants -> 
     ireland_result <- ont_evaluate("unemployed_ireland", "ireland", 1)
     uk_result <- ont_evaluate("unemployed_uk", "united_kingdom", 1)
 
-    # US: age 16-65, so person 3 (age 17) and person 1 (age 25) qualify
-    # Person 4 (age 68) excluded by max_age=65
+    # Different age ranges should produce results
     us_unemployed <- sum(us_result$concept_value, na.rm = TRUE)
-
-    # Ireland: age 15-66, so persons 1, 3, 4 could qualify
     ireland_unemployed <- sum(ireland_result$concept_value, na.rm = TRUE)
 
-    # Different age ranges should produce different counts
     expect_true(is.numeric(us_unemployed))
     expect_true(is.numeric(ireland_unemployed))
 
@@ -282,12 +284,12 @@ test_that("dataset and lineage workflow: register -> materialize -> track lineag
     ont_define_concept("icu_patient", "Encounter", "Patient in ICU")
     ont_add_version("icu_patient", "operational", 1, "department = 'ICU'", "active")
 
-    # 3. Materialize the concept
+    # 3. Materialize the concept (use correct parameter name: output_table)
     mat_result <- ont_materialize(
         concept_id = "icu_patient",
         scope = "operational",
         version = 1,
-        output_name = "icu_encounters"
+        output_table = "icu_encounters"
     )
 
     expect_true(!is.null(mat_result$run_id))
@@ -347,7 +349,7 @@ test_that("RBAC and governance gates workflow", {
 
     # 6. Check gate (should fail - no audits yet)
     gate_result <- ont_check_gate("gate_audit_coverage", "test_concept", "test", 1, "activation")
-    expect_equal(gate_result$result, "failed")
+    expect_false(gate_result$passed)  # Use 'passed' not 'result'
 
     # 7. Request approval
     request_id <- ont_request_approval(
@@ -413,12 +415,12 @@ test_that("observation and analysis workflow", {
     expect_equal(obs_result$concept_true, 2)  # cases 1 and 3
 
     # 3. Record another observation (simulating time passing)
-    Sys.sleep(0.1)  # Small delay to ensure different timestamp
+    Sys.sleep(0.1)
     obs_result2 <- ont_observe("high_priority_open", "ops", 1)
 
-    # 4. Get trend
-    trend <- ont_get_trend("high_priority_open", "ops", 1)
-    expect_true(nrow(trend) >= 1)
+    # 4. List observations
+    observations <- ont_list_observations("high_priority_open", "ops", 1)
+    expect_true(nrow(observations) >= 2)
 
     # 5. Compare versions
     ont_add_version("high_priority_open", "ops", 2, "status = 'open' AND priority <= 2", "active")
@@ -492,7 +494,7 @@ test_that("multi-scope concept workflow", {
     # Regulatory: txns 2, 4 (risk >= 70 or amount >= 10000)
     expect_equal(reg_count, 2)
 
-    # Operational: txns 2, 3, 4 (risk >= 50)
+    # Operational: txns 2, 4 (risk >= 50)
     expect_equal(ops_count, 2)
 
     # ML: txns 2, 4 (flagged = TRUE)
@@ -569,9 +571,9 @@ test_that("end-to-end: raw data to governed insights", {
     ont_record_audit("high_performer", "hr", 1, "3", TRUE, TRUE, "hr_manager")
     ont_record_audit("high_performer", "hr", 1, "5", TRUE, TRUE, "hr_manager")
 
-    # Check drift (should be 0%)
-    drift <- ont_check_drift("high_performer", "hr", 1)
-    expect_equal(drift$disagreement_rate, 0)
+    # Check audit summary (instead of drift which needs more audits)
+    summary <- ont_audit_summary("high_performer", "hr", 1)
+    expect_equal(summary$disagreement_rate, 0)
 
     # === PHASE 4: Governance ===
 
@@ -591,8 +593,8 @@ test_that("end-to-end: raw data to governed insights", {
     # Approve
     ont_approve_request(request_id, "hr_director", "Validated against historical data")
 
-    # Activate via governance
-    ont_governance_action(
+    # Log governance action and activate
+    ont_log_governance(
         action_type = "activate",
         concept_id = "high_performer",
         scope = "hr",
@@ -601,13 +603,15 @@ test_that("end-to-end: raw data to governed insights", {
         rationale = "Approved by HR leadership"
     )
 
+    ont_activate_version("high_performer", "hr", 1)
+
     # === PHASE 5: Materialize and Track ===
 
     mat_result <- ont_materialize(
         concept_id = "high_performer",
         scope = "hr",
         version = 1,
-        output_name = "high_performers_2024"
+        output_table = "high_performers_2024"
     )
 
     # Verify materialization
