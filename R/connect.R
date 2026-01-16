@@ -529,4 +529,104 @@ create_tables_inline <- function(con) {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ")
+
+    # Roles (RBAC)
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_roles (
+            role_id TEXT PRIMARY KEY,
+            role_name TEXT NOT NULL,
+            description TEXT,
+            permissions TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ")
+
+    # Insert default roles
+    DBI::dbExecute(con, "
+        INSERT OR IGNORE INTO ont_roles (role_id, role_name, description, permissions) VALUES
+        ('viewer', 'Viewer', 'Can view concepts and evaluations', '[\"concept:read\", \"dataset:read\", \"audit:read\"]'),
+        ('editor', 'Editor', 'Can create and modify draft concepts', '[\"concept:read\", \"concept:write\", \"concept:evaluate\", \"dataset:read\", \"dataset:write\", \"audit:read\", \"audit:write\"]'),
+        ('approver', 'Approver', 'Can approve and activate concepts', '[\"concept:read\", \"concept:write\", \"concept:evaluate\", \"concept:approve\", \"concept:activate\", \"dataset:read\", \"dataset:write\", \"audit:read\", \"audit:write\", \"gate:override\"]'),
+        ('admin', 'Admin', 'Full access to all operations', '[\"*\"]')
+    ")
+
+    # User roles
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_user_roles (
+            user_id TEXT NOT NULL,
+            role_id TEXT NOT NULL,
+            scope_type TEXT DEFAULT 'global',
+            scope_value TEXT,
+            granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            granted_by TEXT,
+            expires_at TIMESTAMP,
+            PRIMARY KEY (user_id, role_id, scope_type, scope_value)
+        )
+    ")
+
+    # Governance gates
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_governance_gates (
+            gate_id TEXT PRIMARY KEY,
+            gate_name TEXT NOT NULL,
+            gate_type TEXT NOT NULL,
+            applies_to TEXT NOT NULL,
+            condition_json TEXT NOT NULL,
+            severity TEXT DEFAULT 'blocking',
+            enabled BOOLEAN DEFAULT TRUE,
+            scope_filter TEXT,
+            domain_filter TEXT,
+            description TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT
+        )
+    ")
+
+    # Insert default gates
+    DBI::dbExecute(con, "
+        INSERT OR IGNORE INTO ont_governance_gates (gate_id, gate_name, gate_type, applies_to, condition_json, severity, description) VALUES
+        ('gate_audit_coverage', 'Minimum Audit Coverage', 'audit_coverage', 'activation',
+         '{\"min_audits\": 10, \"min_agreement_rate\": 0.9}', 'blocking',
+         'Requires minimum audit coverage and agreement rate before activation'),
+        ('gate_no_open_drift', 'No Open Drift Events', 'drift_threshold', 'activation',
+         '{\"max_open_drift_events\": 0}', 'blocking',
+         'Cannot activate if there are open drift events'),
+        ('gate_approval_required', 'Approval Required', 'approval_required', 'activation',
+         '{\"min_approvals\": 1, \"approver_roles\": [\"approver\", \"admin\"]}', 'blocking',
+         'Requires at least one approval from authorized role')
+    ")
+
+    # Gate checks
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_gate_checks (
+            check_id TEXT PRIMARY KEY,
+            gate_id TEXT NOT NULL,
+            concept_id TEXT NOT NULL,
+            scope TEXT NOT NULL,
+            version INTEGER NOT NULL,
+            action_type TEXT NOT NULL,
+            check_result TEXT NOT NULL,
+            check_details TEXT,
+            checked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            checked_by TEXT,
+            override_reason TEXT
+        )
+    ")
+
+    # Approval requests
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_approval_requests (
+            request_id TEXT PRIMARY KEY,
+            concept_id TEXT NOT NULL,
+            scope TEXT NOT NULL,
+            version INTEGER NOT NULL,
+            requested_action TEXT NOT NULL,
+            status TEXT DEFAULT 'pending',
+            requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            requested_by TEXT,
+            decided_at TIMESTAMP,
+            decided_by TEXT,
+            decision_notes TEXT
+        )
+    ")
 }
