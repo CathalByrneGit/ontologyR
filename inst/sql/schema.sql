@@ -495,3 +495,167 @@ SELECT
     r.started_at AS run_time
 FROM ont_lineage_edges le
 JOIN ont_runs r ON le.run_id = r.run_id;
+
+-- =============================================================================
+-- RBAC-LITE & GOVERNANCE GATES (Foundry-inspired)
+-- =============================================================================
+-- This layer adds:
+--   - Roles: Named permission sets (viewer, editor, approver, admin)
+--   - User roles: Assign roles to users per domain/scope
+--   - Permissions: Fine-grained action permissions
+--   - Governance gates: Conditions that must pass before status transitions
+--   - Gate checks: Record of gate evaluations
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- ROLES
+-- Predefined roles with associated permissions.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_roles (
+    role_id          TEXT PRIMARY KEY,
+    role_name        TEXT NOT NULL,
+    description      TEXT,
+    permissions      TEXT NOT NULL,           -- JSON array of permission strings
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert default roles if not exist
+INSERT OR IGNORE INTO ont_roles (role_id, role_name, description, permissions) VALUES
+    ('viewer', 'Viewer', 'Can view concepts and evaluations', '["concept:read", "dataset:read", "audit:read"]'),
+    ('editor', 'Editor', 'Can create and modify draft concepts', '["concept:read", "concept:write", "concept:evaluate", "dataset:read", "dataset:write", "audit:read", "audit:write"]'),
+    ('approver', 'Approver', 'Can approve and activate concepts', '["concept:read", "concept:write", "concept:evaluate", "concept:approve", "concept:activate", "dataset:read", "dataset:write", "audit:read", "audit:write", "gate:override"]'),
+    ('admin', 'Admin', 'Full access to all operations', '["*"]');
+
+-- -----------------------------------------------------------------------------
+-- USER ROLES
+-- Assigns roles to users, optionally scoped to domains or specific concepts.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_user_roles (
+    user_id          TEXT NOT NULL,
+    role_id          TEXT NOT NULL,
+    scope_type       TEXT DEFAULT 'global',   -- global, domain, concept
+    scope_value      TEXT,                    -- domain name or concept_id if scoped
+    granted_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    granted_by       TEXT,
+    expires_at       TIMESTAMP,               -- NULL = no expiration
+
+    PRIMARY KEY (user_id, role_id, scope_type, scope_value),
+    FOREIGN KEY (role_id) REFERENCES ont_roles(role_id)
+);
+
+-- Index for permission lookups
+CREATE INDEX IF NOT EXISTS idx_user_roles_user ON ont_user_roles(user_id);
+
+-- -----------------------------------------------------------------------------
+-- GOVERNANCE GATES
+-- Defines conditions that must pass before certain actions (like activation).
+-- Gates can require: audit coverage, drift thresholds, approvals, etc.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_governance_gates (
+    gate_id          TEXT PRIMARY KEY,
+    gate_name        TEXT NOT NULL,
+    gate_type        TEXT NOT NULL,           -- 'audit_coverage', 'drift_threshold', 'approval_required', 'custom'
+    applies_to       TEXT NOT NULL,           -- 'activation', 'deprecation', 'materialization', 'all'
+    condition_json   TEXT NOT NULL,           -- JSON: gate-specific conditions
+    severity         TEXT DEFAULT 'blocking', -- 'blocking', 'warning'
+    enabled          BOOLEAN DEFAULT TRUE,
+    scope_filter     TEXT,                    -- Optional: only apply to certain scopes
+    domain_filter    TEXT,                    -- Optional: only apply to certain domains
+    description      TEXT,
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by       TEXT
+);
+
+-- Insert default gates
+INSERT OR IGNORE INTO ont_governance_gates (gate_id, gate_name, gate_type, applies_to, condition_json, severity, description) VALUES
+    ('gate_audit_coverage', 'Minimum Audit Coverage', 'audit_coverage', 'activation',
+     '{"min_audits": 10, "min_agreement_rate": 0.9}', 'blocking',
+     'Requires minimum audit coverage and agreement rate before activation'),
+    ('gate_no_open_drift', 'No Open Drift Events', 'drift_threshold', 'activation',
+     '{"max_open_drift_events": 0}', 'blocking',
+     'Cannot activate if there are open drift events'),
+    ('gate_approval_required', 'Approval Required', 'approval_required', 'activation',
+     '{"min_approvals": 1, "approver_roles": ["approver", "admin"]}', 'blocking',
+     'Requires at least one approval from authorized role');
+
+-- -----------------------------------------------------------------------------
+-- GATE CHECKS
+-- Records each evaluation of a governance gate.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_gate_checks (
+    check_id         TEXT PRIMARY KEY,
+    gate_id          TEXT NOT NULL,
+    concept_id       TEXT NOT NULL,
+    scope            TEXT NOT NULL,
+    version          INTEGER NOT NULL,
+    action_type      TEXT NOT NULL,           -- What action triggered this check
+    check_result     TEXT NOT NULL,           -- 'passed', 'failed', 'overridden'
+    check_details    TEXT,                    -- JSON: evaluation details
+    checked_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    checked_by       TEXT,
+    override_reason  TEXT,                    -- If overridden, why
+
+    FOREIGN KEY (gate_id) REFERENCES ont_governance_gates(gate_id),
+    FOREIGN KEY (concept_id, scope, version)
+        REFERENCES ont_concept_versions(concept_id, scope, version)
+);
+
+-- Index for gate check history
+CREATE INDEX IF NOT EXISTS idx_gate_checks_concept
+    ON ont_gate_checks(concept_id, scope, version);
+
+-- -----------------------------------------------------------------------------
+-- APPROVAL REQUESTS
+-- Tracks approval workflows for concept versions.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_approval_requests (
+    request_id       TEXT PRIMARY KEY,
+    concept_id       TEXT NOT NULL,
+    scope            TEXT NOT NULL,
+    version          INTEGER NOT NULL,
+    requested_action TEXT NOT NULL,           -- 'activate', 'deprecate', 'retire'
+    status           TEXT DEFAULT 'pending',  -- 'pending', 'approved', 'rejected', 'expired'
+    requested_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    requested_by     TEXT,
+    decided_at       TIMESTAMP,
+    decided_by       TEXT,
+    decision_notes   TEXT,
+
+    FOREIGN KEY (concept_id, scope, version)
+        REFERENCES ont_concept_versions(concept_id, scope, version)
+);
+
+-- Index for pending approvals
+CREATE INDEX IF NOT EXISTS idx_approval_requests_status
+    ON ont_approval_requests(status, requested_at);
+
+-- -----------------------------------------------------------------------------
+-- VIEWS: RBAC convenience views
+-- -----------------------------------------------------------------------------
+
+-- Effective permissions for a user (considering all assigned roles)
+CREATE VIEW IF NOT EXISTS ont_user_permissions AS
+SELECT
+    ur.user_id,
+    ur.scope_type,
+    ur.scope_value,
+    r.role_id,
+    r.role_name,
+    r.permissions
+FROM ont_user_roles ur
+JOIN ont_roles r ON ur.role_id = r.role_id
+WHERE (ur.expires_at IS NULL OR ur.expires_at > CURRENT_TIMESTAMP);
+
+-- Pending approvals summary
+CREATE VIEW IF NOT EXISTS ont_pending_approvals AS
+SELECT
+    ar.*,
+    cv.sql_expr,
+    cv.rationale,
+    c.description AS concept_description,
+    c.owner_domain
+FROM ont_approval_requests ar
+JOIN ont_concept_versions cv ON ar.concept_id = cv.concept_id
+    AND ar.scope = cv.scope AND ar.version = cv.version
+JOIN ont_concepts c ON ar.concept_id = c.concept_id
+WHERE ar.status = 'pending';
