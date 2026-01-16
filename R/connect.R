@@ -446,4 +446,87 @@ create_tables_inline <- function(con) {
             executed_by TEXT
         )
     ")
+
+    # Datasets (Foundry-inspired)
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_datasets (
+            dataset_id TEXT PRIMARY KEY,
+            dataset_name TEXT NOT NULL,
+            dataset_type TEXT NOT NULL DEFAULT 'source',
+            physical_name TEXT NOT NULL,
+            object_type TEXT,
+            description TEXT,
+            schema_json TEXT,
+            row_count INTEGER,
+            owner TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT,
+            updated_at TIMESTAMP,
+            source_concept_id TEXT,
+            source_scope TEXT,
+            source_version INTEGER,
+            source_filter TEXT
+        )
+    ")
+
+    # Transforms
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_transforms (
+            transform_id TEXT PRIMARY KEY,
+            transform_name TEXT NOT NULL,
+            output_dataset_id TEXT NOT NULL,
+            transform_type TEXT NOT NULL DEFAULT 'sql',
+            code TEXT,
+            description TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT
+        )
+    ")
+
+    # Transform inputs
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_transform_inputs (
+            transform_id TEXT NOT NULL,
+            input_dataset_id TEXT NOT NULL,
+            input_role TEXT DEFAULT 'primary',
+            PRIMARY KEY (transform_id, input_dataset_id)
+        )
+    ")
+
+    # Runs
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_runs (
+            run_id TEXT PRIMARY KEY,
+            transform_id TEXT,
+            run_type TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'running',
+            started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            ended_at TIMESTAMP,
+            input_snapshot TEXT,
+            output_dataset_id TEXT,
+            output_row_count INTEGER,
+            output_hash TEXT,
+            concept_id TEXT,
+            scope TEXT,
+            version INTEGER,
+            sql_executed TEXT,
+            filter_expr TEXT,
+            triggered_by TEXT,
+            executed_by TEXT,
+            log TEXT
+        )
+    ")
+
+    # Lineage edges
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_lineage_edges (
+            edge_id TEXT PRIMARY KEY,
+            run_id TEXT NOT NULL,
+            from_dataset_id TEXT NOT NULL,
+            to_dataset_id TEXT NOT NULL,
+            edge_type TEXT NOT NULL,
+            details_json TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ")
 }

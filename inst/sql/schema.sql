@@ -334,3 +334,164 @@ SELECT
 FROM ont_observations
 GROUP BY concept_id, scope, version, DATE(observed_at);
 
+-- =============================================================================
+-- DATASETS, TRANSFORMS & LINEAGE (Foundry-inspired)
+-- =============================================================================
+-- This layer adds:
+--   - Dataset registry: track all data assets (source tables, materialized outputs)
+--   - Transforms: define how datasets are produced
+--   - Runs: record each execution with inputs/outputs
+--   - Lineage edges: track data flow for impact analysis
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- DATASETS
+-- Registry of all data assets - source tables, materialized concepts, derived datasets.
+-- A dataset can be:
+--   - 'source': an external table registered for use
+--   - 'materialized': output of ont_materialize()
+--   - 'derived': output of a transform
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_datasets (
+    dataset_id       TEXT PRIMARY KEY,
+    dataset_name     TEXT NOT NULL,
+    dataset_type     TEXT NOT NULL DEFAULT 'source',  -- source, materialized, derived
+    physical_name    TEXT NOT NULL,           -- actual table/view name in DB
+    object_type      TEXT,                    -- linked object type (if applicable)
+    description      TEXT,
+    schema_json      TEXT,                    -- JSON: column names and types
+    row_count        INTEGER,                 -- cached row count
+    owner            TEXT,
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by       TEXT,
+    updated_at       TIMESTAMP,
+
+    -- For materialized datasets, link to source concept
+    source_concept_id TEXT,
+    source_scope      TEXT,
+    source_version    INTEGER,
+    source_filter     TEXT,                   -- filter expression used
+
+    FOREIGN KEY (object_type) REFERENCES ont_object_types(object_type)
+);
+
+-- -----------------------------------------------------------------------------
+-- TRANSFORMS
+-- Defines how a dataset is produced. Can be SQL or reference to R function.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_transforms (
+    transform_id     TEXT PRIMARY KEY,
+    transform_name   TEXT NOT NULL,
+    output_dataset_id TEXT NOT NULL,
+    transform_type   TEXT NOT NULL DEFAULT 'sql',  -- sql, r_function, concept_eval
+    code             TEXT,                    -- SQL text or R function name
+    description      TEXT,
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by       TEXT,
+
+    FOREIGN KEY (output_dataset_id) REFERENCES ont_datasets(dataset_id)
+);
+
+-- -----------------------------------------------------------------------------
+-- TRANSFORM INPUTS
+-- Links transforms to their input datasets (for DAG construction).
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_transform_inputs (
+    transform_id     TEXT NOT NULL,
+    input_dataset_id TEXT NOT NULL,
+    input_role       TEXT DEFAULT 'primary',  -- primary, join, lookup, filter
+
+    PRIMARY KEY (transform_id, input_dataset_id),
+    FOREIGN KEY (transform_id) REFERENCES ont_transforms(transform_id),
+    FOREIGN KEY (input_dataset_id) REFERENCES ont_datasets(dataset_id)
+);
+
+-- -----------------------------------------------------------------------------
+-- RUNS
+-- Records each execution of a transform or materialization.
+-- This is the core of reproducibility - "this output came from these inputs."
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_runs (
+    run_id           TEXT PRIMARY KEY,
+    transform_id     TEXT,                    -- NULL for ad-hoc materializations
+    run_type         TEXT NOT NULL,           -- 'transform', 'materialize', 'evaluate'
+    status           TEXT NOT NULL DEFAULT 'running',  -- running, success, failed
+    started_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ended_at         TIMESTAMP,
+
+    -- Input snapshot for reproducibility
+    input_snapshot   TEXT,                    -- JSON: dataset_id -> {row_count, hash, ...}
+
+    -- Output info
+    output_dataset_id TEXT,
+    output_row_count  INTEGER,
+    output_hash       TEXT,                   -- hash of output for change detection
+
+    -- Provenance
+    concept_id       TEXT,                    -- if this run evaluated a concept
+    scope            TEXT,
+    version          INTEGER,
+    sql_executed     TEXT,                    -- actual SQL that ran
+    filter_expr      TEXT,
+
+    -- Metadata
+    triggered_by     TEXT,                    -- 'manual', 'schedule', 'dependency'
+    executed_by      TEXT,
+    log              TEXT,                    -- execution log/errors
+
+    FOREIGN KEY (transform_id) REFERENCES ont_transforms(transform_id),
+    FOREIGN KEY (output_dataset_id) REFERENCES ont_datasets(dataset_id)
+);
+
+-- Index for querying run history
+CREATE INDEX IF NOT EXISTS idx_runs_time ON ont_runs(started_at);
+CREATE INDEX IF NOT EXISTS idx_runs_output ON ont_runs(output_dataset_id);
+
+-- -----------------------------------------------------------------------------
+-- LINEAGE EDGES
+-- Explicit edges in the data lineage graph.
+-- Captures: "dataset A was used to produce dataset B in run R"
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_lineage_edges (
+    edge_id          TEXT PRIMARY KEY,
+    run_id           TEXT NOT NULL,
+    from_dataset_id  TEXT NOT NULL,
+    to_dataset_id    TEXT NOT NULL,
+    edge_type        TEXT NOT NULL,           -- 'input', 'join', 'filter', 'concept_eval'
+    details_json     TEXT,                    -- additional context
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (run_id) REFERENCES ont_runs(run_id),
+    FOREIGN KEY (from_dataset_id) REFERENCES ont_datasets(dataset_id),
+    FOREIGN KEY (to_dataset_id) REFERENCES ont_datasets(dataset_id)
+);
+
+-- Index for lineage queries
+CREATE INDEX IF NOT EXISTS idx_lineage_from ON ont_lineage_edges(from_dataset_id);
+CREATE INDEX IF NOT EXISTS idx_lineage_to ON ont_lineage_edges(to_dataset_id);
+
+-- -----------------------------------------------------------------------------
+-- VIEWS: Lineage convenience views
+-- -----------------------------------------------------------------------------
+
+-- Upstream lineage: what datasets feed into this one?
+CREATE VIEW IF NOT EXISTS ont_upstream_lineage AS
+SELECT
+    to_dataset_id AS dataset_id,
+    from_dataset_id AS upstream_dataset_id,
+    edge_type,
+    run_id,
+    r.started_at AS run_time
+FROM ont_lineage_edges le
+JOIN ont_runs r ON le.run_id = r.run_id;
+
+-- Downstream lineage: what datasets depend on this one?
+CREATE VIEW IF NOT EXISTS ont_downstream_lineage AS
+SELECT
+    from_dataset_id AS dataset_id,
+    to_dataset_id AS downstream_dataset_id,
+    edge_type,
+    run_id,
+    r.started_at AS run_time
+FROM ont_lineage_edges le
+JOIN ont_runs r ON le.run_id = r.run_id;
