@@ -129,6 +129,72 @@ ont_drift_status()
 | **Audit** | A human judgment comparing system evaluation to ground truth |
 | **Drift** | When disagreement rate exceeds threshold |
 
+## Concept Templates
+
+Templates let you define a **base concept** that can be **inherited** by scope-specific variants. This is perfect for standards like ILO unemployment definitions where different countries have local adaptations.
+
+```r
+# Define an ILO unemployment template
+ont_define_template(
+  template_id = "ilo_unemployed",
+  template_name = "ILO Unemployment Definition",
+  object_type = "Person",
+  base_sql_expr = "age >= {{min_age}} AND age <= {{max_age}} AND NOT employed AND seeking_work",
+  parameters = list(
+    min_age = list(default = 15, type = "integer"),
+    max_age = list(default = 74, type = "integer")
+  ),
+  source_standard = "ILO"
+)
+
+# Create country-specific variants
+ont_inherit_concept("unemployed_us", "ilo_unemployed", "united_states",
+  parameter_values = list(min_age = 16, max_age = 65),
+  deviation_notes = "US uses 16-65 age range per BLS")
+
+ont_inherit_concept("unemployed_ireland", "ilo_unemployed", "ireland",
+  parameter_values = list(min_age = 15, max_age = 66))
+
+# Compare all variants
+ont_compare_template_variants("ilo_unemployed")
+```
+
+## Interactive Shiny Apps
+
+ontologyR includes three Shiny applications for interactive exploration and management:
+
+### Ontology Explorer
+
+Browse concepts, templates, audits, and governance information:
+
+```r
+ont_run_explorer()
+# Or point to a specific database:
+ont_run_explorer(db_path = "my_ontology.duckdb")
+```
+
+### Definition Builder
+
+Visual SQL builder for non-technical users to create concept definitions:
+
+```r
+ont_run_definition_builder()
+```
+
+### Lineage Viewer
+
+Interactive DAG visualization of datasets and transforms:
+
+```r
+ont_run_lineage_viewer()
+```
+
+List all available apps:
+
+```r
+ont_list_apps()
+```
+
 ## API Reference
 
 ### Top-level Entry Points
@@ -211,6 +277,22 @@ ont$disconnect()
 - `ont_deprecation_impact()` — Analyze change impact
 - `ont_governance_report()` — Generate status report
 
+### Templates
+- `ont_define_template()` — Create a reusable template with parameters
+- `ont_inherit_concept()` — Create concept from template with custom parameters
+- `ont_get_template()` — Retrieve template details
+- `ont_list_templates()` — List all templates
+- `ont_get_template_variants()` — List concepts derived from a template
+- `ont_compare_template_variants()` — Compare parameter values across variants
+- `ont_render_template()` — Preview SQL with parameter substitution
+- `ont_get_concept_inheritance()` — Get template lineage for a concept
+
+### Interactive Apps
+- `ont_run_explorer()` — Launch Ontology Explorer (browse concepts, templates, audits)
+- `ont_run_definition_builder()` — Launch Definition Builder (visual SQL builder)
+- `ont_run_lineage_viewer()` — Launch Lineage Viewer (DAG visualization)
+- `ont_list_apps()` — List available Shiny apps
+
 ## Design Principles
 
 1. **Definitions are hypotheses** — test them, don't assume they're right
@@ -223,6 +305,8 @@ ont$disconnect()
 
 - **New to ontologies?** Start with `vignette("what-is-an-ontology")` — a plain-English guide with bakery analogies
 - `vignette("introduction")` — Code examples and API walkthrough
+- `vignette("templates-and-inheritance")` — Creating reusable concept templates
+- `vignette("official-statistics")` — Working with statistical standards (ILO, OECD)
 
 ## Design Notes: Tables vs. Classes
 
