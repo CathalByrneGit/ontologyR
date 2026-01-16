@@ -212,3 +212,15 @@ ont_compare_versions("ready_for_discharge", "flow", 1, 2)
 - See
   [`vignette("what-is-an-ontology")`](https://cathalbyrnegit.github.io/ontologyR/articles/what-is-an-ontology.md)
   for a conceptual overview with analogies
+- See
+  [`vignette("datasets-and-materialization")`](https://cathalbyrnegit.github.io/ontologyR/articles/datasets-and-materialization.md)
+  for registering datasets and materializing concepts
+- See
+  [`vignette("transforms-and-lineage")`](https://cathalbyrnegit.github.io/ontologyR/articles/transforms-and-lineage.md)
+  for building data pipelines with lineage tracking
+- See
+  [`vignette("governance-gates")`](https://cathalbyrnegit.github.io/ontologyR/articles/governance-gates.md)
+  for access control and quality gates
+- See
+  [`vignette("end-to-end-workflow")`](https://cathalbyrnegit.github.io/ontologyR/articles/end-to-end-workflow.md)
+  for a complete worked example

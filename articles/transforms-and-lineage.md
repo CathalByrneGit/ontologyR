@@ -1,0 +1,433 @@
+# Transforms and Data Lineage
+
+## The Assembly Line Analogy
+
+Imagine a car factory:
+
+1.  **Station 1**: Raw steel arrives, gets cut into body panels
+2.  **Station 2**: Body panels get welded together into a frame
+3.  **Station 3**: Frame gets painted
+4.  **Station 4**: Engine and interior are installed
+5.  **Station 5**: Final inspection, car rolls off the line
+
+Each station is a **transform** — it takes inputs and produces outputs.
+The path from raw steel to finished car is the **lineage**.
+
+**ontologyR transforms work the same way** — they define how data flows
+from sources to outputs, with full traceability.
+
+------------------------------------------------------------------------
+
+## Why Transforms Matter
+
+Without transforms, data pipelines look like this:
+
+``` sql
+-- dashboard_query.sql (written 3 years ago, nobody knows what it does)
+SELECT a.*, b.total, c.status
+FROM some_table a
+JOIN (SELECT ... FROM other_table ...) b ON a.id = b.id
+JOIN (SELECT ... FROM yet_another ...) c ON a.id = c.id
+WHERE ...
+```
+
+Problems: - What tables does this actually use? - If `other_table`
+changes schema, does this break? - How long does this take to run? -
+When did the logic last change?
+
+**Transforms solve this** by making data transformations explicit,
+tracked, and reproducible.
+
+------------------------------------------------------------------------
+
+## Defining a Transform
+
+A transform is a named, tracked data transformation:
+
+``` r
+library(ontologyR)
+ont_connect(":memory:")
+
+# Assume we have some source tables
+DBI::dbWriteTable(ont_get_connection(), "orders", tibble::tibble(
+  order_id = paste0("O", 1:100),
+  customer_id = paste0("C", sample(1:20, 100, replace = TRUE)),
+  amount = runif(100, 10, 500),
+  order_date = Sys.Date() - sample(1:90, 100, replace = TRUE)
+))
+
+DBI::dbWriteTable(ont_get_connection(), "customers", tibble::tibble(
+  customer_id = paste0("C", 1:20),
+  name = paste("Customer", 1:20),
+  segment = sample(c("Enterprise", "SMB", "Consumer"), 20, replace = TRUE)
+))
+
+# Register source datasets
+ont_register_dataset("ds_orders", "Orders", "orders", "source")
+ont_register_dataset("ds_customers", "Customers", "customers", "source")
+
+# Define a transform that joins them
+ont_define_transform(
+  transform_id = "txf_order_summary",
+  transform_name = "Order Summary by Customer",
+  output_dataset_id = "ds_order_summary",
+  transform_type = "sql",
+  code = "
+    SELECT
+      c.customer_id,
+      c.name,
+      c.segment,
+      COUNT(o.order_id) as order_count,
+      SUM(o.amount) as total_spent,
+      MAX(o.order_date) as last_order
+    FROM customers c
+    LEFT JOIN orders o ON c.customer_id = o.customer_id
+    GROUP BY c.customer_id, c.name, c.segment
+  ",
+  input_datasets = c("ds_orders", "ds_customers"),
+  description = "Aggregates order data by customer for reporting"
+)
+```
+
+### The Recipe Card Analogy
+
+A transform is like a recipe card: - **Name**: “Chocolate Chip
+Cookies” - **Ingredients** (inputs): flour, butter, chocolate chips -
+**Instructions** (code): mix, bake at 350F for 12 min - **Result**
+(output): cookies
+
+The recipe card doesn’t make cookies — it describes HOW to make them.
+Similarly, a transform definition describes the transformation but
+doesn’t execute it.
+
+------------------------------------------------------------------------
+
+## Executing Transforms
+
+To actually run the transform:
+
+``` r
+# Execute the transform
+result <- ont_execute_transform("txf_order_summary")
+#> v Executed transform txf_order_summary
+#> i 20 rows in 0.12 seconds
+
+# Check the result
+result
+#> $run_id
+#> [1] "RUN-20250116-abc123"
+#>
+#> $transform_id
+#> [1] "txf_order_summary"
+#>
+#> $row_count
+#> [1] 20
+#>
+#> $status
+#> [1] "completed"
+```
+
+Each execution: - Creates a **run record** (who, when, how long) -
+Captures **input snapshots** (what the inputs looked like) - Creates
+**lineage edges** (what flowed where) - Updates the **output dataset**
+metadata
+
+------------------------------------------------------------------------
+
+## Input Snapshots: Reproducibility
+
+Here’s something powerful: every run captures a snapshot of its inputs.
+
+``` r
+# Get run details
+run <- ont_get_run("RUN-20250116-abc123")
+
+# See what the inputs looked like at execution time
+jsonlite::fromJSON(run$input_snapshot)
+#> $ds_orders
+#> $ds_orders$row_count
+#> [1] 100
+#>
+#> $ds_customers
+#> $ds_customers$row_count
+#> [1] 20
+```
+
+This answers: **“When this report was generated, what data was it based
+on?”**
+
+### The Photograph Analogy
+
+Input snapshots are like taking a photograph of your ingredients before
+cooking. If the cookies taste weird, you can look at the photo and say
+“Ah, we only had 50g of butter that day instead of 100g.”
+
+------------------------------------------------------------------------
+
+## Building Transform Chains
+
+Real data pipelines have multiple steps. ontologyR tracks the full
+chain:
+
+``` r
+# Step 1: Clean orders (remove test orders)
+ont_define_transform(
+  "txf_clean_orders", "Clean Orders", "ds_clean_orders", "sql",
+  code = "SELECT * FROM orders WHERE amount > 0 AND customer_id NOT LIKE 'TEST%'",
+  input_datasets = "ds_orders"
+)
+ont_execute_transform("txf_clean_orders")
+
+# Step 2: Aggregate by customer
+ont_define_transform(
+  "txf_customer_totals", "Customer Totals", "ds_customer_totals", "sql",
+  code = "SELECT customer_id, SUM(amount) as total FROM ds_clean_orders GROUP BY customer_id",
+  input_datasets = "ds_clean_orders"
+)
+ont_execute_transform("txf_customer_totals")
+
+# Step 3: Segment customers
+ont_define_transform(
+  "txf_customer_segments", "Customer Segments", "ds_customer_segments", "sql",
+  code = "
+    SELECT customer_id, total,
+           CASE WHEN total > 1000 THEN 'Gold'
+                WHEN total > 500 THEN 'Silver'
+                ELSE 'Bronze' END as tier
+    FROM ds_customer_totals
+  ",
+  input_datasets = "ds_customer_totals"
+)
+ont_execute_transform("txf_customer_segments")
+```
+
+Now you have a three-step pipeline, fully tracked.
+
+------------------------------------------------------------------------
+
+## Visualizing the DAG
+
+Your transforms form a **Directed Acyclic Graph** (DAG) — data flows in
+one direction, no cycles.
+
+``` r
+# Get the transform graph
+dag <- ont_get_transform_dag()
+
+dag$nodes
+#> # A tibble: 7 x 3
+#>   node_id             node_type label
+#>   <chr>               <chr>     <chr>
+#> 1 txf_clean_orders    transform Clean Orders
+#> 2 txf_customer_totals transform Customer Totals
+#> 3 txf_customer_segments transform Customer Segments
+#> 4 ds_orders           source    Orders
+#> 5 ds_clean_orders     derived   Clean Orders
+#> 6 ds_customer_totals  derived   Customer Totals
+#> 7 ds_customer_segments derived  Customer Segments
+
+dag$edges
+#> # A tibble: 6 x 3
+#>   from                to                    edge_type
+#>   <chr>               <chr>                 <chr>
+#> 1 ds_orders           txf_clean_orders      primary
+#> 2 txf_clean_orders    ds_clean_orders       output
+#> 3 ds_clean_orders     txf_customer_totals   primary
+#> ...
+```
+
+This is like a **subway map** for your data — you can see all the routes
+and stations.
+
+------------------------------------------------------------------------
+
+## Impact Analysis: What Will Break?
+
+The killer feature is **impact analysis**. Before changing anything, see
+what depends on it:
+
+``` r
+# What happens if I change the orders table?
+impact <- ont_get_impact("ds_orders")
+
+impact$total_affected_datasets
+#> [1] 3
+
+impact$total_affected_transforms
+#> [1] 3
+
+impact$direct_transforms
+#> # A tibble: 1 x 2
+#>   transform_id     transform_name
+#>   <chr>            <chr>
+#> 1 txf_clean_orders Clean Orders
+
+impact$all_affected_transforms
+#> # A tibble: 3 x 2
+#>   transform_id          transform_name
+#>   <chr>                 <chr>
+#> 1 txf_clean_orders      Clean Orders
+#> 2 txf_customer_totals   Customer Totals
+#> 3 txf_customer_segments Customer Segments
+```
+
+### The Domino Analogy
+
+Impact analysis shows you the dominoes. Push one, and you can see which
+ones will fall.
+
+Without this: “I’ll just change this column…” *three dashboards break*
+
+With this: “This column is used by 3 transforms feeding 2 dashboards.
+Let me coordinate the change.”
+
+------------------------------------------------------------------------
+
+## Comparing Runs: What Changed?
+
+When numbers look different, you can compare runs:
+
+``` r
+# Run the transform twice (maybe data changed)
+result1 <- ont_execute_transform("txf_customer_totals")
+# ... time passes, data changes ...
+result2 <- ont_execute_transform("txf_customer_totals")
+
+# Compare them
+comparison <- ont_compare_runs(result1$run_id, result2$run_id)
+
+comparison$output_row_diff
+#> [1] 5  # 5 more customers this time
+
+comparison$input_changes
+#> Shows row count changes in inputs
+```
+
+This answers: **“Why does today’s report show different numbers than
+yesterday’s?”**
+
+------------------------------------------------------------------------
+
+## DAG Validation: Catch Errors Early
+
+ontologyR can validate your transform graph:
+
+``` r
+# Check for cycles (impossible data flows)
+validation <- ont_validate_dag()
+
+validation$is_valid
+#> [1] TRUE
+
+validation$cycles
+#> list()  # No cycles - good!
+```
+
+If you accidentally create a circular dependency (A depends on B, B
+depends on C, C depends on A), validation catches it before you waste
+time debugging.
+
+------------------------------------------------------------------------
+
+## Practical Example: Sales Analytics Pipeline
+
+``` r
+library(ontologyR)
+ont_connect(":memory:")
+
+# === Source Data ===
+DBI::dbWriteTable(ont_get_connection(), "raw_transactions", tibble::tibble(
+  txn_id = 1:1000,
+  product_id = sample(1:50, 1000, replace = TRUE),
+  quantity = sample(1:10, 1000, replace = TRUE),
+  unit_price = runif(1000, 5, 100),
+  txn_date = Sys.Date() - sample(1:365, 1000, replace = TRUE)
+))
+
+DBI::dbWriteTable(ont_get_connection(), "products", tibble::tibble(
+  product_id = 1:50,
+  product_name = paste("Product", 1:50),
+  category = sample(c("Electronics", "Clothing", "Food"), 50, replace = TRUE)
+))
+
+# === Register Sources ===
+ont_register_dataset("ds_transactions", "Transactions", "raw_transactions", "source")
+ont_register_dataset("ds_products", "Products", "products", "source")
+
+# === Build Pipeline ===
+
+# Step 1: Calculate line totals
+ont_define_transform(
+  "txf_line_totals", "Line Totals", "ds_line_totals", "sql",
+  code = "SELECT *, quantity * unit_price as line_total FROM raw_transactions",
+  input_datasets = "ds_transactions"
+)
+
+# Step 2: Enrich with product info
+ont_define_transform(
+  "txf_enriched_sales", "Enriched Sales", "ds_enriched_sales", "sql",
+  code = "
+    SELECT t.*, p.product_name, p.category
+    FROM ds_line_totals t
+    JOIN products p ON t.product_id = p.product_id
+  ",
+  input_datasets = c("ds_line_totals", "ds_products")
+)
+
+# Step 3: Aggregate by category
+ont_define_transform(
+  "txf_category_summary", "Category Summary", "ds_category_summary", "sql",
+  code = "
+    SELECT category,
+           COUNT(*) as transactions,
+           SUM(line_total) as revenue
+    FROM ds_enriched_sales
+    GROUP BY category
+  ",
+  input_datasets = "ds_enriched_sales"
+)
+
+# === Execute Pipeline ===
+ont_execute_transform("txf_line_totals")
+ont_execute_transform("txf_enriched_sales")
+ont_execute_transform("txf_category_summary")
+
+# === Analyze ===
+# Full lineage from source to summary
+ont_get_upstream("ds_category_summary")
+#> Shows: transactions -> line_totals -> enriched_sales -> category_summary
+#>        products -> enriched_sales -> category_summary
+
+# Impact if products table changes
+ont_get_impact("ds_products")
+#> Shows: enriched_sales and category_summary would be affected
+```
+
+------------------------------------------------------------------------
+
+## Key Concepts Summary
+
+| Concept             | What It Is                    | Analogy              |
+|---------------------|-------------------------------|----------------------|
+| **Transform**       | Named data transformation     | Recipe card          |
+| **Input Dataset**   | Data source for transform     | Ingredients          |
+| **Output Dataset**  | Result of transform           | Finished dish        |
+| **Run**             | Single execution of transform | One batch of cooking |
+| **Input Snapshot**  | State of inputs at run time   | Photo of ingredients |
+| **Lineage**         | Graph of data dependencies    | Family tree          |
+| **DAG**             | The full transform graph      | Subway map           |
+| **Impact Analysis** | What depends on X             | Domino prediction    |
+
+------------------------------------------------------------------------
+
+## Next Steps
+
+- See
+  [`vignette("datasets-and-materialization")`](https://cathalbyrnegit.github.io/ontologyR/articles/datasets-and-materialization.md)
+  for concept-based materialization
+- See
+  [`vignette("governance-gates")`](https://cathalbyrnegit.github.io/ontologyR/articles/governance-gates.md)
+  for quality controls on transforms
+
+Remember: **The goal isn’t just to move data — it’s to understand how
+data moves.**

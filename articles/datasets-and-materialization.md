@@ -1,0 +1,297 @@
+# Datasets and Materialization
+
+## The Factory Analogy
+
+Imagine you run a factory that produces widgets. You have:
+
+- **Raw materials** coming in (steel, plastic, screws)
+- **Processing steps** that transform materials
+- **Finished products** going out
+
+Now imagine you need to answer: “Where did this defective widget come
+from?”
+
+Without tracking, you can’t answer that question. With proper tracking,
+you can trace back through every step to find the source.
+
+**ontologyR’s dataset registry works the same way** — it tracks your
+data assets (raw and processed) so you always know where data came from
+and what depends on it.
+
+------------------------------------------------------------------------
+
+## The Problem: Untraceable Data
+
+In most organizations, data pipelines look like this:
+
+    source_table → ??? → dashboard
+
+Someone wrote a query years ago. It pulls from… somewhere. Nobody knows:
+
+- What tables feed into this dashboard?
+- If I change `customers` table, what breaks?
+- When was this data last refreshed?
+- Why do the numbers differ from yesterday?
+
+**ontologyR solves this** by making data lineage a first-class citizen.
+
+------------------------------------------------------------------------
+
+## Dataset Registry: Know Your Assets
+
+The **dataset registry** is like an inventory of all your data assets.
+
+``` r
+library(ontologyR)
+ont_connect(":memory:")
+
+# Register your source data
+ont_register_dataset(
+  dataset_id = "ds_raw_orders",
+  dataset_name = "Raw Orders",
+  physical_name = "orders",
+  dataset_type = "source",
+  description = "Daily order extract from ERP system",
+  owner = "data_engineering"
+)
+
+# See all registered datasets
+ont_list_datasets()
+#> # A tibble: 1 x 12
+#>   dataset_id    dataset_name physical_name dataset_type row_count owner
+#>   <chr>         <chr>        <chr>         <chr>            <int> <chr>
+#> 1 ds_raw_orders Raw Orders   orders        source            5000 data_engineering
+```
+
+Think of this like a **library catalog** — it doesn’t contain the books
+(data), but it tells you what exists and where to find it.
+
+------------------------------------------------------------------------
+
+## Materialization: From Concept to Table
+
+Here’s where it gets powerful. Remember concepts from the introduction?
+They’re SQL expressions that classify objects:
+
+``` r
+# Define: "A high-value customer spent > $1000 lifetime"
+ont_define_concept("high_value_customer", "Customer")
+ont_add_version(
+  "high_value_customer", "marketing", 1,
+  sql_expr = "lifetime_spend > 1000",
+  status = "active"
+)
+```
+
+But what if you need to: - Share this list with a downstream team? -
+Load it into a visualization tool? - Use it in another query without
+recalculating?
+
+**Materialization** turns a concept evaluation into a persistent table:
+
+``` r
+# Turn the concept into a real table
+result <- ont_materialize(
+  concept_id = "high_value_customer",
+  scope = "marketing"
+)
+#> v Materialized high_value_customer to mat_high_value_customer_marketing
+#> i 1,247 rows in 0.34 seconds
+
+# Now it's a real table you can query
+DBI::dbGetQuery(con, "SELECT COUNT(*) FROM mat_high_value_customer_marketing")
+#>   count
+#> 1  1247
+```
+
+### The Cooking Analogy
+
+Think of it like cooking:
+
+- A **concept** is a recipe (“high-value customer = spend \> \$1000”)
+- **Evaluation** is cooking one portion on demand
+- **Materialization** is batch-cooking and storing in the freezer
+
+You materialize when: - Many consumers need the same result -
+Calculation is expensive - You need a point-in-time snapshot
+
+------------------------------------------------------------------------
+
+## Run Records: The Audit Trail
+
+Every materialization creates a **run record** — a complete log of what
+happened:
+
+``` r
+# See all recent runs
+ont_list_runs()
+#> # A tibble: 3 x 12
+#>   run_id              status    run_type       output_row_count started_at
+#>   <chr>               <chr>     <chr>                     <int> <dttm>
+#> 1 RUN-20250116-abc123 completed materialization            1247 2025-01-16 10:30:00
+#> 2 RUN-20250115-def456 completed materialization            1198 2025-01-15 10:30:00
+#> 3 RUN-20250114-ghi789 completed materialization            1156 2025-01-14 10:30:00
+
+# Get details for a specific run
+run <- ont_get_run("RUN-20250116-abc123")
+run$sql_executed
+#> "CREATE OR REPLACE TABLE mat_high_value_customer_marketing AS
+#>  SELECT t.*, (lifetime_spend > 1000) AS concept_value
+#>  FROM customers t"
+```
+
+This is like a **receipt** for every data transformation. If something
+looks wrong, you can trace back to exactly what SQL ran, when, and with
+what inputs.
+
+------------------------------------------------------------------------
+
+## Lineage: Following the Breadcrumbs
+
+The most powerful feature is **lineage tracking** — knowing the
+relationships between datasets.
+
+### Upstream: Where did this data come from?
+
+``` r
+# What feeds into my high-value customers table?
+ont_get_upstream("DS-mat_high_value_customer_marketing")
+#> # A tibble: 1 x 5
+#>   from_dataset_id to_dataset_id                       edge_type       depth
+#>   <chr>           <chr>                               <chr>           <int>
+#> 1 DS-customers    DS-mat_high_value_customer_marketing materialization     1
+```
+
+### Downstream: What depends on this data?
+
+``` r
+# If I change the customers table, what breaks?
+ont_get_downstream("DS-customers")
+#> # A tibble: 2 x 5
+#>   from_dataset_id to_dataset_id                          edge_type       depth
+#>   <chr>           <chr>                                  <chr>           <int>
+#> 1 DS-customers    DS-mat_high_value_customer_marketing   materialization     1
+#> 2 DS-customers    DS-mat_churn_risk_customers_analytics  materialization     1
+```
+
+### The Family Tree Analogy
+
+Lineage is like a family tree: - **Upstream** = ancestors (where you
+came from) - **Downstream** = descendants (who depends on you)
+
+If grandpa’s data is wrong, all descendants are affected. Lineage lets
+you see exactly who.
+
+------------------------------------------------------------------------
+
+## Full Provenance: The Complete Story
+
+For any materialized dataset, you can get its complete provenance:
+
+``` r
+prov <- ont_get_provenance("DS-mat_high_value_customer_marketing")
+
+# What concept defined this?
+prov$concept
+#> $concept_id
+#> [1] "high_value_customer"
+#>
+#> $scope
+#> [1] "marketing"
+#>
+#> $version
+#> [1] 1
+#>
+#> $sql_expr
+#> [1] "lifetime_spend > 1000"
+
+# When was it last run?
+prov$last_run$ended_at
+#> [1] "2025-01-16 10:30:45"
+
+# What tables fed into it?
+prov$upstream$from_dataset_id
+#> [1] "DS-customers"
+```
+
+This answers the eternal question: **“Where did this number come
+from?”**
+
+------------------------------------------------------------------------
+
+## Practical Example: Customer Segmentation
+
+Let’s walk through a realistic example.
+
+``` r
+library(ontologyR)
+ont_connect(":memory:")
+
+# 1. Create some source data
+DBI::dbWriteTable(ont_get_connection(), "customers", tibble::tibble(
+  customer_id = paste0("C", 1:1000),
+  lifetime_spend = runif(1000, 0, 5000),
+  last_order_date = Sys.Date() - sample(1:365, 1000, replace = TRUE),
+  region = sample(c("North", "South", "East", "West"), 1000, replace = TRUE)
+))
+
+# 2. Register the source
+ont_register_dataset("ds_customers", "Customers", "customers", "source",
+                      owner = "data_engineering")
+ont_register_object("Customer", "customers", "customer_id")
+
+# 3. Define customer segments as concepts
+ont_define_concept("high_value", "Customer",
+                    description = "High lifetime value customers")
+ont_add_version("high_value", "marketing", 1,
+                 sql_expr = "lifetime_spend > 1000", status = "active")
+
+ont_define_concept("at_risk_churn", "Customer",
+                    description = "Customers at risk of churning")
+ont_add_version("at_risk_churn", "retention", 1,
+                 sql_expr = "last_order_date < CURRENT_DATE - INTERVAL '90 days'",
+                 status = "active")
+
+# 4. Materialize for downstream use
+ont_materialize("high_value", "marketing")
+ont_materialize("at_risk_churn", "retention")
+
+# 5. Check what we've built
+ont_list_datasets()
+#> # A tibble: 3 x 6
+#>   dataset_id                     dataset_type row_count
+#>   <chr>                          <chr>            <int>
+#> 1 ds_customers                   source            1000
+#> 2 DS-mat_high_value_marketing    materialized       412
+#> 3 DS-mat_at_risk_churn_retention materialized       287
+
+# 6. Trace lineage
+ont_get_downstream("ds_customers")
+#> Shows both materialized tables depend on customers
+```
+
+------------------------------------------------------------------------
+
+## Key Benefits
+
+| Without Dataset Registry           | With Dataset Registry       |
+|------------------------------------|-----------------------------|
+| “Where does this table come from?” | Full lineage graph          |
+| “What will break if I change X?”   | Impact analysis             |
+| “When was this last updated?”      | Run records with timestamps |
+| “Why are the numbers different?”   | Provenance chain            |
+| “Who owns this data?”              | Metadata and ownership      |
+
+------------------------------------------------------------------------
+
+## Next Steps
+
+- See
+  [`vignette("transforms-and-lineage")`](https://cathalbyrnegit.github.io/ontologyR/articles/transforms-and-lineage.md)
+  for building complex data pipelines
+- See
+  [`vignette("governance-gates")`](https://cathalbyrnegit.github.io/ontologyR/articles/governance-gates.md)
+  for controlling data quality
+
+Remember: **Good data governance isn’t about controlling data — it’s
+about understanding it.**

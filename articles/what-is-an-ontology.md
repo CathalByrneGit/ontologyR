@@ -416,6 +416,18 @@ Now that you understand the concepts:
 - See
   [`vignette("introduction")`](https://cathalbyrnegit.github.io/ontologyR/articles/introduction.md)
   for code examples and API walkthrough
+- See
+  [`vignette("datasets-and-materialization")`](https://cathalbyrnegit.github.io/ontologyR/articles/datasets-and-materialization.md)
+  for the factory analogy: tracking data assets
+- See
+  [`vignette("transforms-and-lineage")`](https://cathalbyrnegit.github.io/ontologyR/articles/transforms-and-lineage.md)
+  for the assembly line analogy: data pipelines
+- See
+  [`vignette("governance-gates")`](https://cathalbyrnegit.github.io/ontologyR/articles/governance-gates.md)
+  for the airport security analogy: quality controls
+- See
+  [`vignette("end-to-end-workflow")`](https://cathalbyrnegit.github.io/ontologyR/articles/end-to-end-workflow.md)
+  for a complete healthcare example
 
 Remember: **the goal isn’t perfect definitions — it’s definitions you
 can test, improve, and trust.**
