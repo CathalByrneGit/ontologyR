@@ -304,6 +304,7 @@ ont_inherit_concept <- function(concept_id,
     ont_add_version(
         concept_id = concept_id,
         scope = scope,
+        version = 1,
         sql_expr = sql_expr,
         status = status,
         rationale = rationale %||% paste("Inherited from template:", template_id),
