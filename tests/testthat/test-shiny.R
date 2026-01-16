@@ -342,3 +342,99 @@ test_that("ont_run_explorer function exists", {
         info = "ont_run_explorer should exist"
     )
 })
+
+# =============================================================================
+# Definition Builder App Tests
+# =============================================================================
+
+test_that("definition builder app file exists in inst", {
+    app_path <- file.path(
+        testthat::test_path(), "..", "..", "inst", "shiny", "definition-builder", "app.R"
+    )
+    app_path <- normalizePath(app_path, mustWork = FALSE)
+
+    expect_true(
+        file.exists(app_path),
+        info = paste("Expected app at:", app_path)
+    )
+})
+
+test_that("definition builder contains required UI elements", {
+    app_path <- file.path(
+        testthat::test_path(), "..", "..", "inst", "shiny", "definition-builder", "app.R"
+    )
+    app_path <- normalizePath(app_path, mustWork = FALSE)
+
+    skip_if_not(file.exists(app_path), "App file not found")
+
+    app_code <- readLines(app_path)
+    app_text <- paste(app_code, collapse = "\n")
+
+    # Check for required UI components
+    expect_true(grepl("page_navbar", app_text), info = "Missing page_navbar")
+    expect_true(grepl("selectInput", app_text), info = "Missing selectInput")
+    expect_true(grepl("textInput", app_text), info = "Missing textInput")
+    expect_true(grepl("DTOutput", app_text), info = "Missing DTOutput")
+    expect_true(grepl("shinyApp", app_text), info = "Missing shinyApp call")
+})
+
+test_that("definition builder contains required tabs", {
+    app_path <- file.path(
+        testthat::test_path(), "..", "..", "inst", "shiny", "definition-builder", "app.R"
+    )
+    app_path <- normalizePath(app_path, mustWork = FALSE)
+
+    skip_if_not(file.exists(app_path), "App file not found")
+
+    app_code <- readLines(app_path)
+    app_text <- paste(app_code, collapse = "\n")
+
+    # Check for expected tabs
+    expect_true(grepl("Build Definition", app_text), info = "Missing Build Definition tab")
+    expect_true(grepl("Save Concept", app_text), info = "Missing Save Concept tab")
+    expect_true(grepl("Use Template", app_text), info = "Missing Use Template tab")
+    expect_true(grepl("Help", app_text), info = "Missing Help tab")
+})
+
+test_that("definition builder contains required features", {
+    app_path <- file.path(
+        testthat::test_path(), "..", "..", "inst", "shiny", "definition-builder", "app.R"
+    )
+    app_path <- normalizePath(app_path, mustWork = FALSE)
+
+    skip_if_not(file.exists(app_path), "App file not found")
+
+    app_code <- readLines(app_path)
+    app_text <- paste(app_code, collapse = "\n")
+
+    # Check for key features
+    expect_true(grepl("Add Condition", app_text), info = "Missing Add Condition button")
+    expect_true(grepl("Generated SQL", app_text), info = "Missing Generated SQL section")
+    expect_true(grepl("Test Definition", app_text), info = "Missing Test Definition button")
+    expect_true(grepl("Save Concept", app_text), info = "Missing Save Concept button")
+})
+
+test_that("definition builder supports db_path option", {
+    app_path <- file.path(
+        testthat::test_path(), "..", "..", "inst", "shiny", "definition-builder", "app.R"
+    )
+    app_path <- normalizePath(app_path, mustWork = FALSE)
+
+    skip_if_not(file.exists(app_path), "App file not found")
+
+    app_code <- readLines(app_path)
+    app_text <- paste(app_code, collapse = "\n")
+
+    expect_true(
+        grepl("ontologyR\\.shiny\\.db_path", app_text),
+        info = "App should read ontologyR.shiny.db_path option"
+    )
+})
+
+test_that("ont_run_definition_builder function exists", {
+    expect_true(
+        exists("ont_run_definition_builder", envir = asNamespace("ontologyR")) ||
+        "ont_run_definition_builder" %in% ls(pattern = "ont_run_definition_builder"),
+        info = "ont_run_definition_builder should exist"
+    )
+})
