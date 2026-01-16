@@ -75,7 +75,7 @@ ont_list_objects()
 #> # A tibble: 1 × 7
 #>   object_type table_name pk_column  description owner_domain created_at         
 #>   <chr>       <chr>      <chr>      <chr>       <chr>        <dttm>             
-#> 1 Encounter   encounters encounter… A patient … patient_flow 2026-01-16 00:25:20
+#> 1 Encounter   encounters encounter… A patient … patient_flow 2026-01-16 00:28:35
 #> # ℹ 1 more variable: created_by <chr>
 
 ont_disconnect()
