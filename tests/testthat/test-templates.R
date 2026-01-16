@@ -147,7 +147,7 @@ test_that("ont_inherit_concept creates concept from template", {
     expect_equal(concepts$concept_id[1], "unemployed_ireland")
 
     # Verify version was created with substituted SQL
-    version <- ont_get_version("unemployed_ireland", "ireland")
+    version <- ont_get_version("unemployed_ireland", "ireland", 1)
     expect_true(grepl("age >= 16", version$sql_expr))
     expect_true(grepl("age <= 66", version$sql_expr))
 })
@@ -177,7 +177,7 @@ test_that("ont_inherit_concept uses defaults for missing parameters", {
         parameter_values = list(x = 5)
     )
 
-    version <- ont_get_version("variant1", "test")
+    version <- ont_get_version("variant1", "test", 1)
     expect_true(grepl("a >= 5", version$sql_expr))
     expect_true(grepl("b <= 20", version$sql_expr))  # default
 })
