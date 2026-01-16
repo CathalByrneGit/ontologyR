@@ -2,3 +2,47 @@ url: https://cathalbyrnegit.github.io/ontologyR/
 template:
   bootstrap: 5
 
+articles:
+  - title: Getting Started
+    navbar: ~
+    contents:
+      - what-is-an-ontology
+      - introduction
+
+  - title: Core Features
+    contents:
+      - datasets-and-materialization
+      - transforms-and-lineage
+      - governance-gates
+
+  - title: Putting It All Together
+    contents:
+      - end-to-end-workflow
+
+navbar:
+  structure:
+    left:  [intro, reference, articles]
+    right: [search, github]
+  components:
+    articles:
+      text: Guides
+      menu:
+        - text: "Conceptual Overview"
+        - text: What is an Ontology?
+          href: articles/what-is-an-ontology.html
+        - text: "---"
+        - text: "Getting Started"
+        - text: Introduction
+          href: articles/introduction.html
+        - text: "---"
+        - text: "Core Features"
+        - text: Datasets & Materialization
+          href: articles/datasets-and-materialization.html
+        - text: Transforms & Lineage
+          href: articles/transforms-and-lineage.html
+        - text: Governance Gates
+          href: articles/governance-gates.html
+        - text: "---"
+        - text: "Complete Example"
+        - text: End-to-End Workflow
+          href: articles/end-to-end-workflow.html
