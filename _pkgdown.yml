@@ -14,6 +14,7 @@ articles:
       - datasets-and-materialization
       - transforms-and-lineage
       - governance-gates
+      - templates-and-inheritance
 
   - title: Putting It All Together
     contents:
