@@ -305,11 +305,12 @@ test_that("dataset and lineage workflow: register -> materialize -> track lineag
     expect_true(nrow(lineage$edges) >= 1)
 
     # 6. Get upstream of materialized dataset
+    # Note: ont_materialize auto-creates source dataset as "DS-{table_name}"
     upstream <- ont_get_upstream(mat_result$dataset_id)
-    expect_true("encounters_source" %in% upstream$from_dataset_id)
+    expect_true("DS-encounters" %in% upstream$from_dataset_id)
 
-    # 7. Get downstream of source
-    downstream <- ont_get_downstream("encounters_source")
+    # 7. Get downstream of source (using auto-created dataset ID)
+    downstream <- ont_get_downstream("DS-encounters")
     expect_true(mat_result$dataset_id %in% downstream$to_dataset_id)
 })
 
