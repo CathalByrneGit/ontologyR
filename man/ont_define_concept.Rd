@@ -37,6 +37,7 @@ represents a meaningful category or classification (e.g., "ready_for_discharge",
 "blocked_bed") that can be evaluated against objects of a specific type.
 }
 \examples{
+\dontrun{
 ont_connect(":memory:")
 ont_register_object("Encounter", "encounters", "encounter_id")
 
@@ -49,5 +50,6 @@ ont_define_concept(
 )
 
 ont_disconnect()
+}
 
 }

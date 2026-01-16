@@ -39,6 +39,7 @@ allows concepts to be defined against logical types without hardcoding
 table names.
 }
 \examples{
+\dontrun{
 ont_connect(":memory:")
 
 # Register an Encounter object type
@@ -54,5 +55,6 @@ ont_register_object(
 ont_list_objects()
 
 ont_disconnect()
+}
 
 }

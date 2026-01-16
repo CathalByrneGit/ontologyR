@@ -23,8 +23,7 @@ ont_check_drift(
 
 \item{threshold}{Numeric. Disagreement rate threshold (0-1). Default 0.15.}
 
-\item{min_audits}{Integer
-. Minimum audits required before checking. Default 10.}
+\item{min_audits}{Integer. Minimum audits required before checking. Default 10.}
 
 \item{window_days}{Integer. Days to look back for recent audits. Default 30.}
 
