@@ -726,3 +726,238 @@ SELECT
 FROM ont_templates t
 JOIN ont_template_inheritance ti ON t.template_id = ti.template_id
 JOIN ont_concepts c ON ti.concept_id = c.concept_id;
+
+-- =============================================================================
+-- ACTIONS & WRITEBACK (Foundry-inspired)
+-- =============================================================================
+-- Actions enable users to take governed actions based on concept evaluations.
+-- This bridges analytics to operations - instead of just viewing data, users
+-- can trigger workflows, escalations, and decisions with full audit trails.
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- ACTION TYPES
+-- Defines types of actions users can take on objects.
+-- Each action type specifies:
+--   - What concept triggers it (optional)
+--   - What parameters users must provide
+--   - What table to write results to
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_action_types (
+    action_type_id   TEXT PRIMARY KEY,
+    action_name      TEXT NOT NULL,
+    description      TEXT,
+    object_type      TEXT NOT NULL,           -- Which object type this action applies to
+    trigger_concept  TEXT,                    -- Optional: concept that enables this action
+    trigger_scope    TEXT,                    -- Scope of trigger concept
+    trigger_condition TEXT,                   -- SQL condition on concept_value (e.g., "concept_value = TRUE")
+    parameters       TEXT,                    -- JSON: parameter definitions {name: {type, required, default, values}}
+    writeback_table  TEXT,                    -- Table to write action results
+    writeback_columns TEXT,                   -- JSON: column mappings
+    require_note     BOOLEAN DEFAULT FALSE,   -- Whether a note is required
+    require_approval BOOLEAN DEFAULT FALSE,   -- Whether approval is needed before execution
+    allowed_roles    TEXT,                    -- JSON: array of roles that can execute
+    enabled          BOOLEAN DEFAULT TRUE,
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by       TEXT,
+
+    FOREIGN KEY (object_type) REFERENCES ont_object_types(object_type),
+    FOREIGN KEY (trigger_concept) REFERENCES ont_concepts(concept_id)
+);
+
+-- -----------------------------------------------------------------------------
+-- ACTION LOG
+-- Records every action execution with full audit trail.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_action_log (
+    action_id        TEXT PRIMARY KEY,
+    action_type_id   TEXT NOT NULL,
+    object_key       TEXT NOT NULL,           -- Primary key of the object acted upon
+    parameters       TEXT,                    -- JSON: actual parameter values
+    concept_value    BOOLEAN,                 -- Concept value at time of action (if triggered)
+    status           TEXT DEFAULT 'completed', -- 'pending_approval', 'completed', 'rejected', 'failed'
+    executed_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    executed_by      TEXT NOT NULL,
+    approved_at      TIMESTAMP,
+    approved_by      TEXT,
+    notes            TEXT,
+    result           TEXT,                    -- JSON: outcome/result data
+    error_message    TEXT,                    -- If failed, why
+
+    FOREIGN KEY (action_type_id) REFERENCES ont_action_types(action_type_id)
+);
+
+-- Index for querying action history
+CREATE INDEX IF NOT EXISTS idx_action_log_type ON ont_action_log(action_type_id, executed_at);
+CREATE INDEX IF NOT EXISTS idx_action_log_object ON ont_action_log(object_key, executed_at);
+
+-- =============================================================================
+-- COMPOSITE SCORES
+-- =============================================================================
+-- Composite scores combine multiple concept evaluations into a single metric.
+-- This enables "risk scores", "health scores", etc. that aggregate signals
+-- from multiple boolean concepts into a weighted numeric score.
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- SCORES
+-- Defines composite score calculations.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_scores (
+    score_id         TEXT PRIMARY KEY,
+    score_name       TEXT NOT NULL,
+    description      TEXT,
+    object_type      TEXT NOT NULL,           -- Which object type this score applies to
+    aggregation      TEXT DEFAULT 'weighted_sum', -- 'weighted_sum', 'weighted_avg', 'max', 'min', 'any_true', 'all_true', 'count_true'
+    score_range_min  REAL DEFAULT 0,          -- Minimum possible score
+    score_range_max  REAL DEFAULT 100,        -- Maximum possible score
+    thresholds       TEXT,                    -- JSON: {low: 30, medium: 60, high: 80} for tier assignment
+    enabled          BOOLEAN DEFAULT TRUE,
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by       TEXT,
+
+    FOREIGN KEY (object_type) REFERENCES ont_object_types(object_type)
+);
+
+-- -----------------------------------------------------------------------------
+-- SCORE COMPONENTS
+-- Links concepts to scores with weights and transformations.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_score_components (
+    score_id         TEXT NOT NULL,
+    component_id     TEXT NOT NULL,           -- Unique within score
+    concept_id       TEXT NOT NULL,
+    scope            TEXT NOT NULL,
+    version          INTEGER,                 -- NULL = use active version
+    weight           REAL DEFAULT 1.0,        -- Weight in aggregation
+    transform        TEXT,                    -- Optional SQL transform (e.g., "CASE WHEN concept_value THEN 1 ELSE 0 END")
+    invert           BOOLEAN DEFAULT FALSE,   -- If TRUE, use NOT concept_value
+    required         BOOLEAN DEFAULT TRUE,    -- If TRUE, NULL concept_value fails the score
+    display_order    INTEGER DEFAULT 0,
+
+    PRIMARY KEY (score_id, component_id),
+    FOREIGN KEY (score_id) REFERENCES ont_scores(score_id),
+    FOREIGN KEY (concept_id) REFERENCES ont_concepts(concept_id)
+);
+
+-- -----------------------------------------------------------------------------
+-- SCORE OBSERVATIONS
+-- Records point-in-time score calculations for trend analysis.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_score_observations (
+    observation_id   TEXT PRIMARY KEY,
+    score_id         TEXT NOT NULL,
+    observed_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total_objects    INTEGER NOT NULL,
+    avg_score        REAL,
+    min_score        REAL,
+    max_score        REAL,
+    std_dev          REAL,
+    tier_counts      TEXT,                    -- JSON: {low: 100, medium: 200, high: 50}
+    observer_id      TEXT,
+
+    FOREIGN KEY (score_id) REFERENCES ont_scores(score_id)
+);
+
+-- Index for score trends
+CREATE INDEX IF NOT EXISTS idx_score_observations_time
+    ON ont_score_observations(score_id, observed_at);
+
+-- =============================================================================
+-- SCENARIO ANALYSIS
+-- =============================================================================
+-- Scenario analysis allows comparing concept definitions before deployment.
+-- Records analysis runs for audit trail and reproducibility.
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- SCENARIOS
+-- Records scenario analysis runs.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_scenarios (
+    scenario_id      TEXT PRIMARY KEY,
+    scenario_name    TEXT,
+    concept_id       TEXT NOT NULL,
+    scope            TEXT NOT NULL,
+    current_version  INTEGER NOT NULL,
+    proposed_sql     TEXT NOT NULL,           -- The proposed new SQL expression
+    analysis_date    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    analyzed_by      TEXT,
+
+    -- Results summary
+    current_matches  INTEGER,                 -- Objects matching current definition
+    proposed_matches INTEGER,                 -- Objects matching proposed definition
+    newly_included   INTEGER,                 -- Objects that would be added
+    newly_excluded   INTEGER,                 -- Objects that would be removed
+    unchanged        INTEGER,                 -- Objects with same result
+
+    -- Detailed results stored as JSON
+    results_json     TEXT,                    -- JSON: detailed comparison data
+
+    -- Outcome
+    status           TEXT DEFAULT 'analyzed', -- 'analyzed', 'approved', 'rejected', 'implemented'
+    decision_notes   TEXT,
+    decided_by       TEXT,
+    decided_at       TIMESTAMP,
+
+    FOREIGN KEY (concept_id) REFERENCES ont_concepts(concept_id)
+);
+
+-- Index for scenario history
+CREATE INDEX IF NOT EXISTS idx_scenarios_concept
+    ON ont_scenarios(concept_id, scope, analysis_date);
+
+-- =============================================================================
+-- ALERTS & THRESHOLDS
+-- =============================================================================
+-- Alert rules trigger notifications when concepts cross thresholds.
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- ALERT RULES
+-- Defines conditions that trigger alerts.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_alert_rules (
+    rule_id          TEXT PRIMARY KEY,
+    rule_name        TEXT NOT NULL,
+    description      TEXT,
+    concept_id       TEXT NOT NULL,
+    scope            TEXT NOT NULL,
+    version          INTEGER,                 -- NULL = use active version
+    condition_type   TEXT NOT NULL,           -- 'threshold', 'change', 'absence'
+    condition_expr   TEXT NOT NULL,           -- SQL expression or threshold value
+    severity         TEXT DEFAULT 'warning',  -- 'info', 'warning', 'critical'
+    notify_roles     TEXT,                    -- JSON: roles to notify
+    notify_users     TEXT,                    -- JSON: specific users to notify
+    cooldown_minutes INTEGER DEFAULT 60,      -- Don't re-alert within this period
+    enabled          BOOLEAN DEFAULT TRUE,
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by       TEXT,
+
+    FOREIGN KEY (concept_id) REFERENCES ont_concepts(concept_id)
+);
+
+-- -----------------------------------------------------------------------------
+-- ALERTS
+-- Records triggered alerts.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_alerts (
+    alert_id         TEXT PRIMARY KEY,
+    rule_id          TEXT NOT NULL,
+    triggered_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    trigger_value    TEXT,                    -- The value that triggered the alert
+    severity         TEXT NOT NULL,
+    message          TEXT,                    -- Generated alert message
+    status           TEXT DEFAULT 'open',     -- 'open', 'acknowledged', 'resolved', 'suppressed'
+    acknowledged_at  TIMESTAMP,
+    acknowledged_by  TEXT,
+    resolution_notes TEXT,
+    resolved_at      TIMESTAMP,
+    resolved_by      TEXT,
+
+    FOREIGN KEY (rule_id) REFERENCES ont_alert_rules(rule_id)
+);
+
+-- Index for active alerts
+CREATE INDEX IF NOT EXISTS idx_alerts_status ON ont_alerts(status, triggered_at);
+CREATE INDEX IF NOT EXISTS idx_alerts_rule ON ont_alerts(rule_id, triggered_at);
