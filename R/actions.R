@@ -193,8 +193,10 @@ ont_execute_action <- function(action_type_id,
             # Evaluate trigger condition with concept_value bound in environment
             eval_env <- new.env()
             eval_env$concept_value <- concept_value
+            # Convert single = to == for comparison (don't touch ==, <=, >=, !=)
+            condition_expr <- gsub("([^=!<>])=([^=])", "\\1==\\2", action_type$trigger_condition)
             condition_met <- tryCatch(
-                eval(parse(text = action_type$trigger_condition), envir = eval_env),
+                eval(parse(text = condition_expr), envir = eval_env),
                 error = function(e) FALSE
             )
             if (!isTRUE(condition_met)) {
@@ -439,43 +441,58 @@ ont_action_history <- function(action_type_id = NULL,
                                 con = NULL) {
     con <- con %||% ont_get_connection()
 
-    query <- paste(
-        "SELECT al.action_id, al.action_type_id, al.object_key, al.parameters,",
-        "al.concept_value, al.status, al.executed_at, al.executed_by,",
-        "al.approved_at, al.approved_by, al.notes, al.result, al.error_message,",
-        "at.action_name, at.object_type",
-        "FROM ont_action_log al",
-        "JOIN ont_action_types at ON al.action_type_id = at.action_type_id",
-        "WHERE 1=1"
-    )
+    # Build base query - use full table names to avoid alias issues
+    base_query <- "
+        SELECT
+            ont_action_log.action_id,
+            ont_action_log.action_type_id,
+            ont_action_log.object_key,
+            ont_action_log.parameters,
+            ont_action_log.concept_value,
+            ont_action_log.status,
+            ont_action_log.executed_at,
+            ont_action_log.executed_by,
+            ont_action_log.approved_at,
+            ont_action_log.approved_by,
+            ont_action_log.notes,
+            ont_action_log.result,
+            ont_action_log.error_message,
+            ont_action_types.action_name,
+            ont_action_types.object_type
+        FROM ont_action_log
+        INNER JOIN ont_action_types
+            ON ont_action_log.action_type_id = ont_action_types.action_type_id
+        WHERE 1=1
+    "
+    query <- base_query
     params <- list()
 
     if (!is.null(action_type_id)) {
-        query <- paste(query, "AND al.action_type_id = ?")
+        query <- paste(query, "AND ont_action_log.action_type_id = ?")
         params <- c(params, action_type_id)
     }
 
     if (!is.null(object_key)) {
-        query <- paste(query, "AND al.object_key = ?")
+        query <- paste(query, "AND ont_action_log.object_key = ?")
         params <- c(params, object_key)
     }
 
     if (!is.null(actor)) {
-        query <- paste(query, "AND al.executed_by = ?")
+        query <- paste(query, "AND ont_action_log.executed_by = ?")
         params <- c(params, actor)
     }
 
     if (!is.null(status)) {
-        query <- paste(query, "AND al.status = ?")
+        query <- paste(query, "AND ont_action_log.status = ?")
         params <- c(params, status)
     }
 
     if (!is.null(since)) {
-        query <- paste(query, "AND al.executed_at >= ?")
+        query <- paste(query, "AND ont_action_log.executed_at >= ?")
         params <- c(params, since)
     }
 
-    query <- paste(query, "ORDER BY al.executed_at DESC LIMIT ?")
+    query <- paste(query, "ORDER BY ont_action_log.executed_at DESC LIMIT ?")
     params <- c(params, limit)
 
     result <- DBI::dbGetQuery(con, query, params = params)
@@ -544,8 +561,10 @@ ont_available_actions <- function(object_key, object_type, con = NULL) {
                     if (!is.na(at$trigger_condition)) {
                         eval_env <- new.env()
                         eval_env$concept_value <- concept_value
+                        # Convert single = to == for comparison (don't touch ==, <=, >=, !=)
+                        condition_expr <- gsub("([^=!<>])=([^=])", "\\1==\\2", at$trigger_condition)
                         trigger_met <- tryCatch({
-                            eval(parse(text = at$trigger_condition), envir = eval_env)
+                            eval(parse(text = condition_expr), envir = eval_env)
                         }, error = function(e) FALSE)
                     }
                 }
@@ -578,34 +597,40 @@ ont_available_actions <- function(object_key, object_type, con = NULL) {
 ont_action_summary <- function(action_type_id = NULL, since = NULL, con = NULL) {
     con <- con %||% ont_get_connection()
 
-    query <- paste(
-        "SELECT at.action_type_id, at.action_name, at.object_type,",
-        "COUNT(*) as total_actions,",
-        "SUM(CASE WHEN al.status = 'completed' THEN 1 ELSE 0 END) as completed,",
-        "SUM(CASE WHEN al.status = 'pending_approval' THEN 1 ELSE 0 END) as pending,",
-        "SUM(CASE WHEN al.status = 'rejected' THEN 1 ELSE 0 END) as rejected,",
-        "SUM(CASE WHEN al.status = 'failed' THEN 1 ELSE 0 END) as failed,",
-        "COUNT(DISTINCT al.object_key) as unique_objects,",
-        "COUNT(DISTINCT al.executed_by) as unique_actors,",
-        "MIN(al.executed_at) as first_action,",
-        "MAX(al.executed_at) as last_action",
-        "FROM ont_action_log al",
-        "JOIN ont_action_types at ON al.action_type_id = at.action_type_id",
-        "WHERE 1=1"
-    )
+    # Use full table names to avoid alias issues with DuckDB
+    base_query <- "
+        SELECT
+            ont_action_types.action_type_id,
+            ont_action_types.action_name,
+            ont_action_types.object_type,
+            COUNT(*) as total_actions,
+            SUM(CASE WHEN ont_action_log.status = 'completed' THEN 1 ELSE 0 END) as completed,
+            SUM(CASE WHEN ont_action_log.status = 'pending_approval' THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN ont_action_log.status = 'rejected' THEN 1 ELSE 0 END) as rejected,
+            SUM(CASE WHEN ont_action_log.status = 'failed' THEN 1 ELSE 0 END) as failed,
+            COUNT(DISTINCT ont_action_log.object_key) as unique_objects,
+            COUNT(DISTINCT ont_action_log.executed_by) as unique_actors,
+            MIN(ont_action_log.executed_at) as first_action,
+            MAX(ont_action_log.executed_at) as last_action
+        FROM ont_action_log
+        INNER JOIN ont_action_types
+            ON ont_action_log.action_type_id = ont_action_types.action_type_id
+        WHERE 1=1
+    "
+    query <- base_query
     params <- list()
 
     if (!is.null(action_type_id)) {
-        query <- paste(query, "AND al.action_type_id = ?")
+        query <- paste(query, "AND ont_action_log.action_type_id = ?")
         params <- c(params, action_type_id)
     }
 
     if (!is.null(since)) {
-        query <- paste(query, "AND al.executed_at >= ?")
+        query <- paste(query, "AND ont_action_log.executed_at >= ?")
         params <- c(params, since)
     }
 
-    query <- paste(query, "GROUP BY at.action_type_id, at.action_name, at.object_type")
+    query <- paste(query, "GROUP BY ont_action_types.action_type_id, ont_action_types.action_name, ont_action_types.object_type")
 
     result <- DBI::dbGetQuery(con, query, params = params)
     tibble::as_tibble(result)
