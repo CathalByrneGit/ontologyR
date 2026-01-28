@@ -285,6 +285,36 @@ ont_compare_scenarios("high_risk", "clinical", proposals = list(
 ont_approve_scenario(scenario$scenario_id, "governance_board", implement = TRUE)
 ```
 
+## Spatial Visualization (CesiumJS)
+
+Visualize ontology data on 3D maps powered by CesiumJS:
+
+```r
+# Register geometry for an object type
+ont_register_geometry("Transformer", "point",
+  lon_column = "longitude",
+  lat_column = "latitude",
+  alt_column = "elevation")
+
+# Export to GeoJSON (for Cesium, Leaflet, etc.)
+geojson <- ont_export_geojson(
+  object_type = "Transformer",
+  concept_id = "high_risk",
+  scope = "predictive",
+  style = list(color_true = "#FF0000", color_false = "#00FF00")
+)
+
+# Export to CZML for time-dynamic visualization
+ont_export_czml("Sensor", score_id = "health_score", file = "sensors.czml")
+
+# Define spatial regions for filtering
+ont_define_region("california", "California", bbox = c(-124.5, 32.5, -114.0, 42.0))
+ont_filter_by_region("Asset", "california")
+
+# Launch interactive 3D viewer
+ont_run_spatial_viewer()
+```
+
 ## API Reference
 
 ### Top-level Entry Points
@@ -381,6 +411,7 @@ ont$disconnect()
 - `ont_run_explorer()` — Launch Ontology Explorer (browse concepts, templates, audits)
 - `ont_run_definition_builder()` — Launch Definition Builder (visual SQL builder)
 - `ont_run_lineage_viewer()` — Launch Lineage Viewer (DAG visualization)
+- `ont_run_spatial_viewer()` — Launch Spatial Viewer (CesiumJS 3D map)
 - `ont_list_apps()` — List available Shiny apps
 
 ### Actions & Writeback
@@ -406,6 +437,18 @@ ont$disconnect()
 - `ont_impact_analysis()` — Analyze downstream effects of changes
 - `ont_approve_scenario()` / `ont_reject_scenario()` — Decide on scenarios
 - `ont_scenario_diff()` — Detailed comparison with sample data
+
+### Spatial / Geospatial
+- `ont_register_geometry()` — Register geometry columns for an object type
+- `ont_get_geometry()` — Get geometry configuration for an object type
+- `ont_export_geojson()` — Export objects as GeoJSON with concept/score coloring
+- `ont_export_czml()` — Export objects as CZML for CesiumJS time-dynamic visualization
+- `ont_define_layer()` — Define a spatial layer for visualization
+- `ont_list_layers()` — List all defined spatial layers
+- `ont_define_region()` — Define a spatial region (bbox or polygon)
+- `ont_list_regions()` — List all defined regions
+- `ont_filter_by_region()` — Filter objects within a spatial region
+- `ont_list_spatial_exports()` — View export history
 
 ## Design Principles
 

@@ -961,3 +961,95 @@ CREATE TABLE IF NOT EXISTS ont_alerts (
 -- Index for active alerts
 CREATE INDEX IF NOT EXISTS idx_alerts_status ON ont_alerts(status, triggered_at);
 CREATE INDEX IF NOT EXISTS idx_alerts_rule ON ont_alerts(rule_id, triggered_at);
+
+-- =============================================================================
+-- SPATIAL / GEOSPATIAL SUPPORT
+-- =============================================================================
+-- Enables visualization of ontology data on maps (Cesium, Leaflet, etc.)
+-- by storing geometry metadata for object types.
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- OBJECT TYPE GEOMETRY
+-- Stores spatial column mappings for object types that have location data.
+-- Supports point (lon/lat), polygon (WKT/GeoJSON), and 3D (with altitude).
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_object_geometry (
+    object_type      TEXT PRIMARY KEY,
+    geometry_type    TEXT NOT NULL DEFAULT 'point',  -- 'point', 'polygon', 'linestring', 'wkt', 'geojson'
+    lon_column       TEXT,                    -- Column containing longitude (for point)
+    lat_column       TEXT,                    -- Column containing latitude (for point)
+    alt_column       TEXT,                    -- Column containing altitude/elevation (optional)
+    geometry_column  TEXT,                    -- Column containing WKT or GeoJSON (for complex geometries)
+    srid             INTEGER DEFAULT 4326,    -- Spatial Reference ID (4326 = WGS84)
+    default_style    TEXT,                    -- JSON: default visualization style
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (object_type) REFERENCES ont_object_types(object_type)
+);
+
+-- -----------------------------------------------------------------------------
+-- SPATIAL LAYERS
+-- Named layers for organizing spatial visualizations.
+-- Each layer can combine multiple concepts/scores with styling rules.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_spatial_layers (
+    layer_id         TEXT PRIMARY KEY,
+    layer_name       TEXT NOT NULL,
+    description      TEXT,
+    object_type      TEXT NOT NULL,
+    concept_id       TEXT,                    -- Optional: filter by concept
+    scope            TEXT,
+    score_id         TEXT,                    -- Optional: color/size by score
+    style_rules      TEXT,                    -- JSON: visualization rules
+    visible          BOOLEAN DEFAULT TRUE,
+    layer_order      INTEGER DEFAULT 0,
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by       TEXT,
+
+    FOREIGN KEY (object_type) REFERENCES ont_object_types(object_type),
+    FOREIGN KEY (concept_id) REFERENCES ont_concepts(concept_id),
+    FOREIGN KEY (score_id) REFERENCES ont_scores(score_id)
+);
+
+-- -----------------------------------------------------------------------------
+-- SPATIAL REGIONS
+-- Named geographic regions for filtering and aggregation.
+-- Can be defined by bounding box, polygon, or reference to external data.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_spatial_regions (
+    region_id        TEXT PRIMARY KEY,
+    region_name      TEXT NOT NULL,
+    region_type      TEXT NOT NULL DEFAULT 'bbox',  -- 'bbox', 'polygon', 'reference'
+    bbox_west        REAL,                    -- Bounding box west longitude
+    bbox_east        REAL,                    -- Bounding box east longitude
+    bbox_south       REAL,                    -- Bounding box south latitude
+    bbox_north       REAL,                    -- Bounding box north latitude
+    geometry_wkt     TEXT,                    -- WKT for polygon regions
+    reference_table  TEXT,                    -- External table for complex regions
+    reference_column TEXT,                    -- Column in reference table
+    reference_value  TEXT,                    -- Value to filter by
+    description      TEXT,
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- -----------------------------------------------------------------------------
+-- SPATIAL EXPORTS
+-- Records of GeoJSON/CZML exports for audit trail.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ont_spatial_exports (
+    export_id        TEXT PRIMARY KEY,
+    export_type      TEXT NOT NULL,           -- 'geojson', 'czml', 'kml', 'csv'
+    object_type      TEXT NOT NULL,
+    concept_id       TEXT,
+    scope            TEXT,
+    score_id         TEXT,
+    region_id        TEXT,                    -- Optional spatial filter
+    record_count     INTEGER,
+    file_path        TEXT,                    -- Where exported (if saved)
+    exported_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    exported_by      TEXT,
+    parameters       TEXT,                    -- JSON: export parameters
+
+    FOREIGN KEY (object_type) REFERENCES ont_object_types(object_type)
+);
