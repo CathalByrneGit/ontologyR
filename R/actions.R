@@ -190,8 +190,13 @@ ont_execute_action <- function(action_type_id,
 
         # Check trigger condition if defined
         if (!is.na(action_type$trigger_condition) && !is.na(concept_value)) {
-            # Simple evaluation of trigger condition
-            condition_met <- eval(parse(text = gsub("concept_value", concept_value, action_type$trigger_condition)))
+            # Evaluate trigger condition with concept_value bound in environment
+            eval_env <- new.env()
+            eval_env$concept_value <- concept_value
+            condition_met <- tryCatch(
+                eval(parse(text = action_type$trigger_condition), envir = eval_env),
+                error = function(e) FALSE
+            )
             if (!isTRUE(condition_met)) {
                 cli::cli_abort("Trigger condition not met: {action_type$trigger_condition}")
             }
@@ -435,7 +440,10 @@ ont_action_history <- function(action_type_id = NULL,
     con <- con %||% ont_get_connection()
 
     query <- paste(
-        "SELECT al.*, at.action_name, at.object_type",
+        "SELECT al.action_id, al.action_type_id, al.object_key, al.parameters,",
+        "al.concept_value, al.status, al.executed_at, al.executed_by,",
+        "al.approved_at, al.approved_by, al.notes, al.result, al.error_message,",
+        "at.action_name, at.object_type",
         "FROM ont_action_log al",
         "JOIN ont_action_types at ON al.action_type_id = at.action_type_id",
         "WHERE 1=1"
@@ -534,8 +542,10 @@ ont_available_actions <- function(object_key, object_type, con = NULL) {
 
                     # Check trigger condition
                     if (!is.na(at$trigger_condition)) {
+                        eval_env <- new.env()
+                        eval_env$concept_value <- concept_value
                         trigger_met <- tryCatch({
-                            eval(parse(text = gsub("concept_value", concept_value, at$trigger_condition)))
+                            eval(parse(text = at$trigger_condition), envir = eval_env)
                         }, error = function(e) FALSE)
                     }
                 }
