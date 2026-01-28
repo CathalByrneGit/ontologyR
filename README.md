@@ -476,6 +476,7 @@ ont$disconnect()
 - **New to ontologies?** Start with `vignette("what-is-an-ontology")` — a plain-English guide with bakery analogies
 - `vignette("introduction")` — Code examples and API walkthrough
 - `vignette("templates-and-inheritance")` — Creating reusable concept templates
+- `vignette("spatial-visualization")` — Interactive maps with Leaflet and CesiumJS
 - `vignette("official-statistics")` — Working with statistical standards (ILO, OECD)
 
 ## Design Notes: Tables vs. Classes

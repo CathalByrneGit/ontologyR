@@ -1,0 +1,420 @@
+---
+title: "Spatial Visualization"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Spatial Visualization}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+## Overview
+
+ontologyR provides spatial visualization capabilities to explore your ontology data on interactive maps. This is particularly useful when your objects have geographic coordinates—assets, facilities, events, sensors, or any entity with a location.
+
+Two visualization options are available:
+
+| Viewer | Technology | Best For |
+|--------|------------|----------|
+| **2D Spatial Viewer** | Leaflet | Quick exploration, lightweight, no setup |
+| **3D Spatial Viewer** | CesiumJS | 3D globe, terrain, time-dynamic data |
+
+Both viewers allow you to:
+
+- Visualize objects as points on a map
+- Color by concept evaluation (TRUE/FALSE)
+- Color by composite score (gradient)
+- Click features for details
+- Filter by spatial regions
+- Export to GeoJSON
+
+## Setting Up Geometry
+
+Before using the spatial viewers, you need to tell ontologyR which columns contain your coordinates.
+
+### Registering Object Geometry
+
+```{r}
+library(ontologyR)
+ont_connect(":memory:")
+
+# Register an object type with location data
+ont_register_object(
+  object_type = "Asset",
+  source_table = "assets",
+  key_column = "asset_id",
+  description = "Physical assets with GPS coordinates"
+)
+
+# Tell ontologyR where the coordinates are
+ont_register_geometry(
+  object_type = "Asset",
+  geometry_type = "point",
+  lon_column = "longitude",
+  lat_column = "latitude"
+)
+```
+
+For 3D visualization, you can also specify altitude:
+
+```{r}
+ont_register_geometry(
+  object_type = "Sensor",
+  geometry_type = "point",
+  lon_column = "lon",
+  lat_column = "lat",
+  alt_column = "elevation_m"
+)
+```
+
+### Checking Geometry Configuration
+
+```{r}
+# View geometry settings for an object type
+geom <- ont_get_geometry("Asset")
+geom$lon_column
+#> "longitude"
+geom$lat_column
+#> "latitude"
+```
+
+## The 2D Spatial Viewer (Leaflet)
+
+The 2D viewer is the recommended starting point—it's lightweight, works everywhere, and requires no external tokens.
+
+### Launching the Viewer
+
+```{r}
+# Launch pointing to your database
+ont_run_spatial_viewer_2d(db_path = "my_ontology.duckdb")
+
+# Or if already connected
+ont_run_spatial_viewer_2d()
+```
+
+### Features
+
+The 2D viewer provides:
+
+- **Multiple base maps** — OpenStreetMap, CartoDB (light/dark), Esri imagery
+- **Point clustering** — Toggle clustering for large datasets
+- **Color by concept** — TRUE (red) / FALSE (green) based on concept evaluation
+- **Color by score** — Gradient from low to high composite scores
+- **Linked table** — Click a row to pan the map to that point
+- **GeoJSON export** — Download button for external use
+
+### Workflow
+
+1. Select an **Object Type** with registered geometry
+2. Choose **Color By**: None, Concept, or Score
+3. If Concept: select the concept and scope
+4. If Score: select the composite score
+5. Click **Load Data** to populate the map
+6. Click points for details, or select rows in the table
+
+## The 3D Spatial Viewer (CesiumJS)
+
+The 3D viewer provides a globe with terrain, ideal for:
+
+- Visualizing elevation differences
+- Time-dynamic data (CZML animations)
+- Immersive presentations
+
+### Setup: Cesium Ion Token
+
+CesiumJS requires an access token for terrain and imagery. Get a free token at [cesium.com/ion](https://cesium.com/ion/):
+
+```{r}
+# Set before launching
+Sys.setenv(CESIUM_ION_TOKEN = "your-token-here")
+
+# Or add to .Renviron for persistence
+# CESIUM_ION_TOKEN=your-token-here
+```
+
+### Launching the Viewer
+
+```{r}
+ont_run_spatial_viewer(db_path = "my_ontology.duckdb")
+```
+
+The 3D viewer has similar controls to the 2D version but renders on a 3D globe with:
+
+- Terrain elevation
+- 3D tilting and rotation
+- Scene mode switching (3D/2D/Columbus)
+
+## Exporting Spatial Data
+
+### GeoJSON Export
+
+Export your data as GeoJSON for use in other tools (QGIS, Mapbox, etc.):
+
+```{r}
+# Basic export
+geojson <- ont_export_geojson(object_type = "Asset")
+
+# Export with concept coloring
+geojson <- ont_export_geojson(
+  object_type = "Asset",
+  concept_id = "high_priority",
+  scope = "operations",
+  style = list(
+    color_true = "#FF0000",
+    color_false = "#00FF00"
+  )
+)
+
+# Export with score coloring
+geojson <- ont_export_geojson(
+  object_type = "Asset",
+  score_id = "asset_health_score",
+  style = list(
+    color_scale = c("#00FF00", "#FFFF00", "#FF0000")  # Low to high
+  )
+)
+
+# Save to file
+geojson <- ont_export_geojson(
+  object_type = "Asset",
+  file = "assets.geojson"
+)
+```
+
+### CZML Export (Time-Dynamic)
+
+CZML is CesiumJS's native format for time-dynamic visualization:
+
+```{r}
+# Export with time column for animation
+czml <- ont_export_czml(
+  object_type = "Event",
+  score_id = "severity_score",
+  time_column = "event_timestamp",
+  file = "events.czml"
+)
+```
+
+CZML files can be loaded directly into Cesium applications for animated playback.
+
+## Spatial Regions
+
+Define regions to filter your data spatially.
+
+### Defining Regions
+
+```{r}
+# Bounding box region
+ont_define_region(
+  region_id = "dublin_metro",
+  region_name = "Dublin Metropolitan Area",
+  bbox = c(-6.5, 53.2, -6.0, 53.5)  # min_lon, min_lat, max_lon, max_lat
+)
+
+# WKT polygon region
+ont_define_region(
+  region_id = "custom_zone",
+  region_name = "Custom Analysis Zone",
+  geometry_wkt = "POLYGON((-6.3 53.3, -6.1 53.3, -6.1 53.4, -6.3 53.4, -6.3 53.3))"
+)
+```
+
+### Filtering by Region
+
+```{r}
+# Get objects within a region
+dublin_assets <- ont_filter_by_region(
+  object_type = "Asset",
+  region_id = "dublin_metro"
+)
+nrow(dublin_assets)
+#> 42
+```
+
+### Listing Regions
+
+```{r}
+regions <- ont_list_regions()
+regions
+#>     region_id              region_name
+#> 1 dublin_metro Dublin Metropolitan Area
+#> 2  custom_zone    Custom Analysis Zone
+```
+
+## Spatial Layers
+
+Layers group visualization settings for reuse:
+
+```{r}
+# Define a layer
+ont_define_layer(
+  layer_id = "high_risk_assets",
+  layer_name = "High Risk Assets",
+  object_type = "Asset",
+  concept_id = "high_risk",
+  scope = "operations",
+  style = list(
+    color_true = "#FF4444",
+    color_false = "#CCCCCC",
+    opacity = 0.8
+  ),
+  description = "Assets flagged as high risk by operations team"
+)
+
+# List defined layers
+layers <- ont_list_layers()
+```
+
+## Combining with Concepts and Scores
+
+Spatial visualization is most powerful when combined with ontologyR's concept and scoring features.
+
+### Example: Asset Health Dashboard
+
+```{r}
+# 1. Define a health score
+ont_define_score(
+  score_id = "asset_health",
+  score_name = "Asset Health Score",
+  object_type = "Asset",
+  components = list(
+    list(concept_id = "maintenance_current", scope = "ops", weight = 0.3),
+    list(concept_id = "no_recent_failures", scope = "ops", weight = 0.4),
+    list(concept_id = "within_warranty", scope = "ops", weight = 0.3)
+  ),
+  aggregation = "weighted_mean"
+)
+
+# 2. Register geometry
+ont_register_geometry("Asset", "point", "lon", "lat")
+
+# 3. Export for visualization
+geojson <- ont_export_geojson(
+  object_type = "Asset",
+  score_id = "asset_health",
+  style = list(
+    color_scale = c("#e74c3c", "#f39c12", "#27ae60")  # Red-Yellow-Green
+  )
+)
+
+# 4. Launch viewer
+ont_run_spatial_viewer_2d()
+```
+
+### Example: Concept-Based Filtering
+
+```{r}
+# Define a concept
+ont_define_concept(
+  concept_id = "needs_inspection",
+  object_type = "Asset",
+  sql_expr = "last_inspection_date < CURRENT_DATE - INTERVAL '90 days'",
+  scope = "maintenance"
+)
+
+# Visualize which assets need inspection
+geojson <- ont_export_geojson(
+  object_type = "Asset",
+  concept_id = "needs_inspection",
+  scope = "maintenance"
+)
+```
+
+## Export History
+
+Track your spatial exports for reproducibility:
+
+```{r}
+exports <- ont_list_spatial_exports()
+exports
+#>   export_id object_type   format                 created_at
+#> 1         1       Asset  geojson 2024-01-15 10:30:00
+#> 2         2       Event     czml 2024-01-15 11:45:00
+```
+
+## Choosing Between 2D and 3D
+
+| Use Case | Recommended Viewer |
+|----------|-------------------|
+| Quick data exploration | 2D (Leaflet) |
+| Large datasets (10k+ points) | 2D with clustering |
+| Presentations / demos | 3D (CesiumJS) |
+| Elevation-aware analysis | 3D (CesiumJS) |
+| Time-series animation | 3D with CZML |
+| Embedding in reports | 2D (simpler) |
+| No internet / offline | 2D (local tiles possible) |
+
+## Best Practices
+
+1. **Register geometry early** — Do this when setting up object types
+
+2. **Use meaningful colors** — Red for problems, green for OK is intuitive
+
+3. **Consider data volume** — Enable clustering for large datasets
+
+4. **Define regions** — Named regions make filtering reproducible
+
+5. **Export for archival** — GeoJSON exports are self-documenting
+
+6. **Combine with scores** — Composite scores give more nuanced coloring than binary concepts
+
+7. **Document layers** — Save layer definitions for consistent visualizations
+
+## Troubleshooting
+
+### "No object types with geometry"
+
+You need to register geometry before using the viewers:
+
+```{r}
+ont_register_geometry("MyType", "point", "lon_col", "lat_col")
+```
+
+### CesiumJS shows blank globe
+
+Check your Cesium Ion token:
+
+```{r}
+Sys.getenv("CESIUM_ION_TOKEN")
+# Should return your token, not ""
+```
+
+### Points not showing
+
+Verify your coordinate columns contain valid numbers:
+
+```{r}
+con <- ont_get_connection()
+DBI::dbGetQuery(con, "SELECT lon_col, lat_col FROM my_table LIMIT 5")
+```
+
+### Slow performance with many points
+
+Enable clustering in the 2D viewer, or filter by region:
+
+```{r}
+# Define a smaller region
+ont_define_region("test_area", "Test Area", bbox = c(-6.3, 53.3, -6.2, 53.4))
+
+# Filter before export
+subset <- ont_filter_by_region("Asset", "test_area")
+```
+
+## Summary
+
+Spatial visualization in ontologyR:
+
+- **2D Viewer** — Lightweight Leaflet maps, no setup required
+- **3D Viewer** — CesiumJS globe with terrain and time animation
+- **GeoJSON/CZML export** — Interoperability with GIS tools
+- **Regions** — Named spatial filters for reproducible analysis
+- **Integration** — Works with concepts and composite scores for meaningful coloring
+
+The combination of ontology-based data classification and spatial visualization provides powerful insights into where your data patterns occur geographically.
