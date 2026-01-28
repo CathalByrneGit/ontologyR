@@ -425,6 +425,9 @@ ont_get_version <- function(concept_id, scope, version, con = NULL) {
 ont_get_active_version <- function(concept_id, scope, as_of = Sys.Date(), con = NULL) {
     con <- con %||% ont_get_connection()
 
+    # Convert Date to string for dbplyr compatibility
+    as_of_str <- as.character(as_of)
+
     result <- dplyr::tbl(con, "ont_concept_versions") |>
         dplyr::filter(
             .data$concept_id == !!concept_id,
@@ -432,8 +435,8 @@ ont_get_active_version <- function(concept_id, scope, as_of = Sys.Date(), con = 
             .data$status == "active"
         ) |>
         dplyr::filter(
-            is.na(.data$valid_from) | .data$valid_from <= !!as_of,
-            is.na(.data$valid_to) | .data$valid_to >= !!as_of
+            is.na(.data$valid_from) | .data$valid_from <= !!as_of_str,
+            is.na(.data$valid_to) | .data$valid_to >= !!as_of_str
         ) |>
         dplyr::arrange(dplyr::desc(.data$version)) |>
         utils::head(1) |>
