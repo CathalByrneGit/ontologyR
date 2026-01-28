@@ -141,22 +141,46 @@ ui <- page_sidebar(
 
 server <- function(input, output, session) {
 
-    # Get database path from environment or use default
-    db_path <- Sys.getenv("ONTOLOGYR_DB", "")
-    if (db_path == "") {
-        db_path <- getOption("ontologyR.shiny.db_path", ":memory:")
+    # Check if already connected (e.g., from an example script)
+    existing_con <- tryCatch(
+        ontologyR::ont_get_connection(),
+        error = function(e) NULL
+    )
+
+    # Track if we created the connection (so we know to clean it up)
+    created_connection <- FALSE
+
+    if (is.null(existing_con)) {
+        # No existing connection - create one
+        db_path <- Sys.getenv("ONTOLOGYR_DB", "")
+        if (db_path == "") {
+            db_path <- getOption("ontologyR.shiny.db_path", ":memory:")
+        }
+
+        tryCatch({
+            ontologyR::ont_connect(db_path)
+            created_connection <- TRUE
+        }, error = function(e) {
+            showNotification(paste("Database error:", e$message), type = "error")
+        })
     }
 
-    # Connect to database
-    tryCatch({
-        ontologyR::ont_connect(db_path)
-    }, error = function(e) {
-        showNotification(paste("Database error:", e$message), type = "error")
-    })
+    # Get the active connection path for display
+    db_path <- tryCatch({
+        con <- ontologyR::ont_get_connection()
+        if (inherits(con, "duckdb_connection")) {
+            dbinfo <- DBI::dbGetInfo(con)
+            dbinfo$dbname
+        } else {
+            "connected"
+        }
+    }, error = function(e) "unknown")
 
-    # Cleanup on session end
+    # Cleanup on session end - only if we created the connection
     onSessionEnded(function() {
-        tryCatch(ontologyR::ont_disconnect(), error = function(e) NULL)
+        if (created_connection) {
+            tryCatch(ontologyR::ont_disconnect(), error = function(e) NULL)
+        }
     })
 
     # --- Reactive values ---
@@ -168,11 +192,19 @@ server <- function(input, output, session) {
 
     # --- Database status ---
     output$db_status <- renderText({
-        if (db_path == ":memory:") {
-            "In-memory database"
-        } else {
-            paste("Connected:", basename(db_path))
-        }
+        tryCatch({
+            con <- ontologyR::ont_get_connection()
+            if (inherits(con, "duckdb_connection")) {
+                dbinfo <- DBI::dbGetInfo(con)
+                if (dbinfo$dbname == ":memory:") {
+                    "In-memory database"
+                } else {
+                    paste("Connected:", basename(dbinfo$dbname))
+                }
+            } else {
+                "Connected"
+            }
+        }, error = function(e) "Not connected")
     })
 
     # --- Geometry count ---
