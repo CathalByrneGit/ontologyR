@@ -434,10 +434,12 @@ ont_action_history <- function(action_type_id = NULL,
                                 con = NULL) {
     con <- con %||% ont_get_connection()
 
-    query <- "SELECT al.*, at.action_name, at.object_type
-              FROM ont_action_log al
-              JOIN ont_action_types at ON al.action_type_id = at.action_type_id
-              WHERE 1=1"
+    query <- paste(
+        "SELECT al.*, at.action_name, at.object_type",
+        "FROM ont_action_log al",
+        "JOIN ont_action_types at ON al.action_type_id = at.action_type_id",
+        "WHERE 1=1"
+    )
     params <- list()
 
     if (!is.null(action_type_id)) {
@@ -566,22 +568,21 @@ ont_available_actions <- function(object_key, object_type, con = NULL) {
 ont_action_summary <- function(action_type_id = NULL, since = NULL, con = NULL) {
     con <- con %||% ont_get_connection()
 
-    query <- "SELECT
-        at.action_type_id,
-        at.action_name,
-        at.object_type,
-        COUNT(*) as total_actions,
-        SUM(CASE WHEN al.status = 'completed' THEN 1 ELSE 0 END) as completed,
-        SUM(CASE WHEN al.status = 'pending_approval' THEN 1 ELSE 0 END) as pending,
-        SUM(CASE WHEN al.status = 'rejected' THEN 1 ELSE 0 END) as rejected,
-        SUM(CASE WHEN al.status = 'failed' THEN 1 ELSE 0 END) as failed,
-        COUNT(DISTINCT al.object_key) as unique_objects,
-        COUNT(DISTINCT al.executed_by) as unique_actors,
-        MIN(al.executed_at) as first_action,
-        MAX(al.executed_at) as last_action
-    FROM ont_action_log al
-    JOIN ont_action_types at ON al.action_type_id = at.action_type_id
-    WHERE 1=1"
+    query <- paste(
+        "SELECT at.action_type_id, at.action_name, at.object_type,",
+        "COUNT(*) as total_actions,",
+        "SUM(CASE WHEN al.status = 'completed' THEN 1 ELSE 0 END) as completed,",
+        "SUM(CASE WHEN al.status = 'pending_approval' THEN 1 ELSE 0 END) as pending,",
+        "SUM(CASE WHEN al.status = 'rejected' THEN 1 ELSE 0 END) as rejected,",
+        "SUM(CASE WHEN al.status = 'failed' THEN 1 ELSE 0 END) as failed,",
+        "COUNT(DISTINCT al.object_key) as unique_objects,",
+        "COUNT(DISTINCT al.executed_by) as unique_actors,",
+        "MIN(al.executed_at) as first_action,",
+        "MAX(al.executed_at) as last_action",
+        "FROM ont_action_log al",
+        "JOIN ont_action_types at ON al.action_type_id = at.action_type_id",
+        "WHERE 1=1"
+    )
     params <- list()
 
     if (!is.null(action_type_id)) {

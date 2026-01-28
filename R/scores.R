@@ -274,35 +274,37 @@ ont_evaluate_score <- function(score_id,
         tier_expr <- glue::glue("CASE {paste(tier_cases, collapse = ' ')} ELSE '{tier_names[length(tier_names)]}' END")
     }
 
-    # Build final query
+    # Build final SELECT clause
     if (include_components) {
-        select_clause <- glue::glue("{obj_meta$pk_column} AS object_key, {paste(component_exprs, collapse = ', ')}")
+        final_select <- paste(
+            "object_key,",
+            paste(component_names, collapse = ", "),
+            ", score,",
+            tier_expr, "AS tier"
+        )
     } else {
-        select_clause <- glue::glue("{obj_meta$pk_column} AS object_key")
+        final_select <- paste(
+            "object_key, score,",
+            tier_expr, "AS tier"
+        )
     }
 
-    query <- glue::glue("
-        WITH component_values AS (
-            SELECT {obj_meta$pk_column} AS object_key,
-                   {paste(component_exprs, collapse = ', ')}
-            FROM {obj_meta$table_name}
-        ),
-        scores AS (
-            SELECT object_key,
-                   {paste(component_names, collapse = ', ')},
-                   ({agg_expr}) AS score
-            FROM component_values
-        )
-        SELECT object_key,
-               {if (include_components) paste(component_names, collapse = ', ') else ''},
-               score,
-               {tier_expr} AS tier
-        FROM scores
-    ")
-
-    # Clean up query (remove empty comma)
-    query <- gsub(",\\s*,", ",", query)
-    query <- gsub(",\\s*score", " score", query)
+    # Build query using paste() for clean formatting
+    query <- paste(
+        "WITH component_values AS (",
+        "SELECT", paste0(obj_meta$pk_column, " AS object_key,"),
+        paste(component_exprs, collapse = ", "),
+        "FROM", obj_meta$table_name,
+        "),",
+        "scores AS (",
+        "SELECT object_key,",
+        paste(component_names, collapse = ", "), ",",
+        paste0("(", agg_expr, ") AS score"),
+        "FROM component_values",
+        ")",
+        "SELECT", final_select,
+        "FROM scores"
+    )
 
     # Apply object filter if provided
     if (!is.null(object_keys)) {
@@ -372,10 +374,14 @@ ont_get_score_components <- function(score_id, con = NULL) {
 ont_list_scores <- function(object_type = NULL, con = NULL) {
     con <- con %||% ont_get_connection()
 
-    query <- "SELECT s.*, COUNT(sc.component_id) AS component_count
-              FROM ont_scores s
-              LEFT JOIN ont_score_components sc ON s.score_id = sc.score_id
-              WHERE s.enabled = TRUE"
+    query <- paste(
+        "SELECT s.score_id, s.score_name, s.description, s.object_type,",
+        "s.aggregation, s.score_range_min, s.score_range_max, s.thresholds,",
+        "s.enabled, s.created_at, COUNT(sc.component_id) AS component_count",
+        "FROM ont_scores s",
+        "LEFT JOIN ont_score_components sc ON s.score_id = sc.score_id",
+        "WHERE s.enabled = TRUE"
+    )
     params <- list()
 
     if (!is.null(object_type)) {
@@ -383,7 +389,13 @@ ont_list_scores <- function(object_type = NULL, con = NULL) {
         params <- c(params, object_type)
     }
 
-    query <- paste(query, "GROUP BY s.score_id ORDER BY s.score_name")
+    query <- paste(
+        query,
+        "GROUP BY s.score_id, s.score_name, s.description, s.object_type,",
+        "s.aggregation, s.score_range_min, s.score_range_max, s.thresholds,",
+        "s.enabled, s.created_at",
+        "ORDER BY s.score_name"
+    )
 
     result <- DBI::dbGetQuery(con, query, params = params)
     tibble::as_tibble(result)

@@ -289,7 +289,7 @@ ont_approve_scenario <- function(scenario_id,
 
     if (implement) {
         # Get next version number
-        versions <- ont_list_versions(scenario$concept_id, con)
+        versions <- ont_list_versions(scenario$concept_id, con = con)
         scope_versions <- versions[versions$scope == scenario$scope, ]
         next_version <- max(scope_versions$version, 0) + 1
 
