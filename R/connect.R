@@ -688,7 +688,8 @@ create_tables_inline <- function(con) {
             scope TEXT,
             score_id TEXT,
             style_rules TEXT,
-            enabled BOOLEAN DEFAULT TRUE,
+            visible BOOLEAN DEFAULT TRUE,
+            layer_order INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             created_by TEXT
         )
@@ -714,18 +715,18 @@ create_tables_inline <- function(con) {
     # Spatial exports log
     DBI::dbExecute(con, "
         CREATE TABLE IF NOT EXISTS ont_spatial_exports (
-            export_id INTEGER PRIMARY KEY,
+            export_id TEXT PRIMARY KEY,
+            export_type TEXT NOT NULL,
             object_type TEXT NOT NULL,
-            format TEXT NOT NULL,
             concept_id TEXT,
             scope TEXT,
             score_id TEXT,
             region_id TEXT,
-            feature_count INTEGER,
+            record_count INTEGER,
             file_path TEXT,
-            file_size_bytes INTEGER,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            created_by TEXT
+            exported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            exported_by TEXT,
+            parameters TEXT
         )
     ")
 }
