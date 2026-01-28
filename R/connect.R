@@ -671,6 +671,7 @@ create_tables_inline <- function(con) {
             alt_column TEXT,
             geometry_column TEXT,
             srid INTEGER DEFAULT 4326,
+            default_style TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             created_by TEXT
         )
@@ -681,12 +682,12 @@ create_tables_inline <- function(con) {
         CREATE TABLE IF NOT EXISTS ont_spatial_layers (
             layer_id TEXT PRIMARY KEY,
             layer_name TEXT NOT NULL,
+            description TEXT,
             object_type TEXT NOT NULL,
             concept_id TEXT,
             scope TEXT,
             score_id TEXT,
-            style_json TEXT,
-            description TEXT,
+            style_rules TEXT,
             enabled BOOLEAN DEFAULT TRUE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             created_by TEXT
@@ -699,10 +700,10 @@ create_tables_inline <- function(con) {
             region_id TEXT PRIMARY KEY,
             region_name TEXT NOT NULL,
             region_type TEXT NOT NULL DEFAULT 'bbox',
-            min_lon REAL,
-            min_lat REAL,
-            max_lon REAL,
-            max_lat REAL,
+            bbox_west REAL,
+            bbox_south REAL,
+            bbox_east REAL,
+            bbox_north REAL,
             geometry_wkt TEXT,
             description TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
