@@ -64,7 +64,7 @@ ont_scenario_analysis <- function(concept_id,
 
     # Get current version
     if (is.null(current_version)) {
-        cv <- ont_get_active_version(concept_id, scope, con)
+        cv <- ont_get_active_version(concept_id, scope, con = con)
         if (is.null(cv)) {
             cli::cli_abort("No active version for {.val {concept_id}} in scope {.val {scope}}.")
         }
@@ -438,7 +438,7 @@ ont_impact_analysis <- function(concept_id, scope, proposed_sql, con = NULL) {
     )
 
     # Get active version
-    cv <- ont_get_active_version(concept_id, scope, con)
+    cv <- ont_get_active_version(concept_id, scope, con = con)
     version <- if (!is.null(cv)) cv$version else NULL
 
     # Find affected dashboards

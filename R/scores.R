@@ -186,9 +186,9 @@ ont_evaluate_score <- function(score_id,
 
         # Get the concept version
         if (is.na(comp$version)) {
-            cv <- ont_get_active_version(comp$concept_id, comp$scope, con)
+            cv <- ont_get_active_version(comp$concept_id, comp$scope, con = con)
         } else {
-            cv <- ont_get_version(comp$concept_id, comp$scope, comp$version, con)
+            cv <- ont_get_version(comp$concept_id, comp$scope, comp$version, con = con)
         }
 
         if (is.null(cv)) {

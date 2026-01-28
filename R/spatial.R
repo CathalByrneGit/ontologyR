@@ -213,9 +213,9 @@ ont_export_geojson <- function(object_type,
     # Add concept evaluation if requested
     if (!is.null(concept_id)) {
         if (is.null(version)) {
-            cv <- ont_get_active_version(concept_id, scope, con)
+            cv <- ont_get_active_version(concept_id, scope, con = con)
         } else {
-            cv <- ont_get_version(concept_id, scope, version, con)
+            cv <- ont_get_version(concept_id, scope, version, con = con)
         }
         if (!is.null(cv)) {
             select_cols <- c(select_cols, glue::glue("({cv$sql_expr}) AS concept_value"))

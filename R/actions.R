@@ -174,7 +174,7 @@ ont_execute_action <- function(action_type_id,
         obj_meta <- ont_get_object(action_type$object_type, con)
 
         # Get active version of trigger concept
-        cv <- ont_get_active_version(action_type$trigger_concept, action_type$trigger_scope, con)
+        cv <- ont_get_active_version(action_type$trigger_concept, action_type$trigger_scope, con = con)
         if (!is.null(cv)) {
             # Evaluate for this specific object
             query <- glue::glue("
@@ -519,7 +519,7 @@ ont_available_actions <- function(object_key, object_type, con = NULL) {
         concept_value <- NA
 
         if (!is.na(at$trigger_concept)) {
-            cv <- ont_get_active_version(at$trigger_concept, at$trigger_scope, con)
+            cv <- ont_get_active_version(at$trigger_concept, at$trigger_scope, con = con)
             if (!is.null(cv)) {
                 query <- glue::glue("
                     SELECT ({cv$sql_expr}) AS concept_value
