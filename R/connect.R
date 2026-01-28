@@ -658,4 +658,73 @@ create_tables_inline <- function(con) {
             PRIMARY KEY (concept_id, template_id)
         )
     ")
+
+    # --- Spatial tables ---
+
+    # Object geometry configuration
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_object_geometry (
+            object_type TEXT PRIMARY KEY,
+            geometry_type TEXT NOT NULL DEFAULT 'point',
+            lon_column TEXT,
+            lat_column TEXT,
+            alt_column TEXT,
+            geometry_column TEXT,
+            srid INTEGER DEFAULT 4326,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT
+        )
+    ")
+
+    # Spatial layers
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_spatial_layers (
+            layer_id TEXT PRIMARY KEY,
+            layer_name TEXT NOT NULL,
+            object_type TEXT NOT NULL,
+            concept_id TEXT,
+            scope TEXT,
+            score_id TEXT,
+            style_json TEXT,
+            description TEXT,
+            enabled BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT
+        )
+    ")
+
+    # Spatial regions
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_spatial_regions (
+            region_id TEXT PRIMARY KEY,
+            region_name TEXT NOT NULL,
+            region_type TEXT NOT NULL DEFAULT 'bbox',
+            min_lon REAL,
+            min_lat REAL,
+            max_lon REAL,
+            max_lat REAL,
+            geometry_wkt TEXT,
+            description TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT
+        )
+    ")
+
+    # Spatial exports log
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_spatial_exports (
+            export_id INTEGER PRIMARY KEY,
+            object_type TEXT NOT NULL,
+            format TEXT NOT NULL,
+            concept_id TEXT,
+            scope TEXT,
+            score_id TEXT,
+            region_id TEXT,
+            feature_count INTEGER,
+            file_path TEXT,
+            file_size_bytes INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT
+        )
+    ")
 }
