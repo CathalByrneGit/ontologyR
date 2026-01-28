@@ -161,7 +161,7 @@ ont_compare_template_variants("ilo_unemployed")
 
 ## Interactive Shiny Apps
 
-ontologyR includes three Shiny applications for interactive exploration and management:
+ontologyR includes several Shiny applications for interactive exploration and management:
 
 ### Ontology Explorer
 
@@ -187,6 +187,18 @@ Interactive DAG visualization of datasets and transforms:
 
 ```r
 ont_run_lineage_viewer()
+```
+
+### Spatial Viewers
+
+Visualize objects on maps with concept/score coloring:
+
+```r
+# 2D Leaflet map (lightweight, no tokens required)
+ont_run_spatial_viewer_2d()
+
+# 3D CesiumJS globe (requires CESIUM_ION_TOKEN for full features)
+ont_run_spatial_viewer()
 ```
 
 List all available apps:
@@ -411,7 +423,8 @@ ont$disconnect()
 - `ont_run_explorer()` — Launch Ontology Explorer (browse concepts, templates, audits)
 - `ont_run_definition_builder()` — Launch Definition Builder (visual SQL builder)
 - `ont_run_lineage_viewer()` — Launch Lineage Viewer (DAG visualization)
-- `ont_run_spatial_viewer()` — Launch Spatial Viewer (CesiumJS 3D map)
+- `ont_run_spatial_viewer()` — Launch 3D Spatial Viewer (CesiumJS globe)
+- `ont_run_spatial_viewer_2d()` — Launch 2D Spatial Viewer (Leaflet map)
 - `ont_list_apps()` — List available Shiny apps
 
 ### Actions & Writeback
