@@ -205,9 +205,9 @@ ont_evaluate_score <- function(score_id,
 
         # Apply transform if defined, otherwise convert boolean to 0/1
         if (!is.na(comp$transform)) {
-            component_exprs[i] <- glue::glue("({comp$transform}) AS {comp$component_id}")
+            component_exprs[i] <- glue::glue("CAST(({comp$transform}) AS DOUBLE) AS {comp$component_id}")
         } else {
-            component_exprs[i] <- glue::glue("CASE WHEN ({sql_expr}) THEN 1.0 ELSE 0.0 END AS {comp$component_id}")
+            component_exprs[i] <- glue::glue("CAST(CASE WHEN ({sql_expr}) THEN 1 ELSE 0 END AS DOUBLE) AS {comp$component_id}")
         }
         component_names[i] <- comp$component_id
     }
@@ -244,11 +244,11 @@ ont_evaluate_score <- function(score_id,
         }
     )
 
-    # Scale to score range
+    # Scale to score range (use CAST to DOUBLE to avoid DuckDB DECIMAL overflow)
     range_size <- score$score_range_max - score$score_range_min
     if (score$aggregation %in% c("weighted_sum", "weighted_avg")) {
         # Normalize: assume components are 0-1, scale to range
-        agg_expr <- glue::glue("{score$score_range_min} + ({agg_expr}) * {range_size}")
+        agg_expr <- glue::glue("CAST({score$score_range_min} AS DOUBLE) + ({agg_expr}) * CAST({range_size} AS DOUBLE)")
     }
 
     # Build tier expression if thresholds defined
