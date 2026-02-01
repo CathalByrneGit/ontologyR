@@ -15,6 +15,7 @@ articles:
       - transforms-and-lineage
       - governance-gates
       - templates-and-inheritance
+      - spatial-visualizaton
 
   - title: Putting It All Together
     contents:
@@ -44,8 +45,10 @@ navbar:
           href: articles/transforms-and-lineage.html
         - text: Governance Gates
           href: articles/governance-gates.html
-        - text: Templates and Inheritance
+        - text: Templates
           href: articles/templates-and-inheritance.html
+        - text: Visualization
+          href: articles/spatial-visualizaton.html
         - text: "---"
         - text: "Complete Examples"
         - text: End-to-End Workflow (Healthcare)

@@ -161,7 +161,7 @@ ont_compare_template_variants("ilo_unemployed")
 
 ## Interactive Shiny Apps
 
-ontologyR includes three Shiny applications for interactive exploration and management:
+ontologyR includes several Shiny applications for interactive exploration and management:
 
 ### Ontology Explorer
 
@@ -189,10 +189,142 @@ Interactive DAG visualization of datasets and transforms:
 ont_run_lineage_viewer()
 ```
 
+### Spatial Viewers
+
+Visualize objects on maps with concept/score coloring:
+
+```r
+# 2D Leaflet map (lightweight, no tokens required)
+ont_run_spatial_viewer_2d()
+
+# 3D CesiumJS globe (requires CESIUM_ION_TOKEN for full features)
+ont_run_spatial_viewer()
+```
+
 List all available apps:
 
 ```r
 ont_list_apps()
+```
+
+## Actions & Writeback
+
+Actions enable governed operations based on concept evaluations—bridging analytics to operations:
+
+```r
+# Define an action type
+ont_define_action(
+  action_type_id = "escalate_to_manager",
+  action_name = "Escalate to Manager",
+  object_type = "Patient",
+  trigger_concept = "high_risk_patient",
+  trigger_scope = "clinical",
+  trigger_condition = "concept_value = TRUE",
+  parameters = list(
+    reason = list(type = "text", required = TRUE),
+    priority = list(type = "enum", values = c("normal", "urgent"))
+  )
+)
+
+# Execute action (with full audit trail)
+ont_execute_action("escalate_to_manager",
+  object_key = "P123",
+  params = list(reason = "Multiple risk factors", priority = "urgent"),
+  actor = "nurse_jones")
+
+# Review action history
+ont_action_history("escalate_to_manager")
+```
+
+## Composite Scores
+
+Combine multiple concepts into weighted risk/health scores:
+
+```r
+# Define a composite score
+ont_define_score(
+  score_id = "patient_risk_score",
+  score_name = "Patient Risk Score",
+  object_type = "Patient",
+  components = list(
+    list(concept_id = "fall_risk", scope = "clinical", weight = 0.3),
+    list(concept_id = "readmission_risk", scope = "clinical", weight = 0.4),
+    list(concept_id = "medication_complexity", scope = "pharmacy", weight = 0.3)
+  ),
+  aggregation = "weighted_sum",
+  thresholds = list(low = 30, medium = 60, high = 80)
+)
+
+# Evaluate scores for all patients
+scores <- ont_evaluate_score("patient_risk_score")
+high_risk <- scores[scores$tier == "high", ]
+
+# Track score distribution over time
+ont_observe_score("patient_risk_score")
+ont_score_trend("patient_risk_score")
+```
+
+## Scenario Analysis
+
+Test definition changes before deployment with what-if analysis:
+
+```r
+# Compare current vs proposed definition
+scenario <- ont_scenario_analysis(
+  concept_id = "ready_for_discharge",
+  scope = "clinical",
+  proposed_sql = "los_days >= 2 AND NOT pending_results AND mobility_score > 3"
+)
+
+scenario$summary
+#> Current: 142 patients match
+#> Proposed: 98 patients match
+#> Newly excluded: 52
+#> Newly included: 8
+
+# See specific cases affected
+scenario$newly_excluded
+scenario$newly_included
+
+# Compare multiple proposals
+ont_compare_scenarios("high_risk", "clinical", proposals = list(
+  conservative = "risk_score >= 80",
+  moderate = "risk_score >= 70",
+  aggressive = "risk_score >= 60"
+))
+
+# Approve and implement as new version
+ont_approve_scenario(scenario$scenario_id, "governance_board", implement = TRUE)
+```
+
+## Spatial Visualization (CesiumJS)
+
+Visualize ontology data on 3D maps powered by CesiumJS:
+
+```r
+# Register geometry for an object type
+ont_register_geometry("Transformer", "point",
+  lon_column = "longitude",
+  lat_column = "latitude",
+  alt_column = "elevation")
+
+# Export to GeoJSON (for Cesium, Leaflet, etc.)
+geojson <- ont_export_geojson(
+  object_type = "Transformer",
+  concept_id = "high_risk",
+  scope = "predictive",
+  style = list(color_true = "#FF0000", color_false = "#00FF00")
+)
+
+# Export to CZML for time-dynamic visualization
+ont_export_czml("Sensor", score_id = "health_score", file = "sensors.czml")
+
+# Define spatial regions for filtering
+ont_define_region("california", "California", bbox = c(-124.5, 32.5, -114.0, 42.0))
+ont_filter_by_region("Asset", "california")
+
+# Launch interactive 3D viewer
+ont_run_spatial_viewer()
 ```
 
 ## API Reference
@@ -291,7 +423,45 @@ ont$disconnect()
 - `ont_run_explorer()` — Launch Ontology Explorer (browse concepts, templates, audits)
 - `ont_run_definition_builder()` — Launch Definition Builder (visual SQL builder)
 - `ont_run_lineage_viewer()` — Launch Lineage Viewer (DAG visualization)
+- `ont_run_spatial_viewer()` — Launch 3D Spatial Viewer (CesiumJS globe)
+- `ont_run_spatial_viewer_2d()` — Launch 2D Spatial Viewer (Leaflet map)
 - `ont_list_apps()` — List available Shiny apps
+
+### Actions & Writeback
+- `ont_define_action()` — Define an action type with parameters and triggers
+- `ont_execute_action()` — Execute an action on an object
+- `ont_approve_action()` / `ont_reject_action()` — Approve or reject pending actions
+- `ont_action_history()` — View action audit trail
+- `ont_pending_actions()` — List actions awaiting approval
+- `ont_available_actions()` — Get actions available for an object
+- `ont_action_summary()` — Action statistics
+
+### Composite Scores
+- `ont_define_score()` — Create a composite score from multiple concepts
+- `ont_evaluate_score()` — Calculate scores for objects
+- `ont_add_score_component()` / `ont_remove_score_component()` — Manage components
+- `ont_observe_score()` — Record score distribution snapshot
+- `ont_score_trend()` — Get historical score observations
+- `ont_score_distribution()` — Distribution statistics
+
+### Scenario Analysis
+- `ont_scenario_analysis()` — Compare current vs proposed definitions
+- `ont_compare_scenarios()` — Compare multiple proposals
+- `ont_impact_analysis()` — Analyze downstream effects of changes
+- `ont_approve_scenario()` / `ont_reject_scenario()` — Decide on scenarios
+- `ont_scenario_diff()` — Detailed comparison with sample data
+
+### Spatial / Geospatial
+- `ont_register_geometry()` — Register geometry columns for an object type
+- `ont_get_geometry()` — Get geometry configuration for an object type
+- `ont_export_geojson()` — Export objects as GeoJSON with concept/score coloring
+- `ont_export_czml()` — Export objects as CZML for CesiumJS time-dynamic visualization
+- `ont_define_layer()` — Define a spatial layer for visualization
+- `ont_list_layers()` — List all defined spatial layers
+- `ont_define_region()` — Define a spatial region (bbox or polygon)
+- `ont_list_regions()` — List all defined regions
+- `ont_filter_by_region()` — Filter objects within a spatial region
+- `ont_list_spatial_exports()` — View export history
 
 ## Design Principles
 
@@ -306,6 +476,7 @@ ont$disconnect()
 - **New to ontologies?** Start with `vignette("what-is-an-ontology")` — a plain-English guide with bakery analogies
 - `vignette("introduction")` — Code examples and API walkthrough
 - `vignette("templates-and-inheritance")` — Creating reusable concept templates
+- `vignette("spatial-visualization")` — Interactive maps with Leaflet and CesiumJS
 - `vignette("official-statistics")` — Working with statistical standards (ILO, OECD)
 
 ## Design Notes: Tables vs. Classes

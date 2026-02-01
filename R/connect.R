@@ -658,4 +658,196 @@ create_tables_inline <- function(con) {
             PRIMARY KEY (concept_id, template_id)
         )
     ")
+
+    # --- Spatial tables ---
+
+    # Object geometry configuration
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_object_geometry (
+            object_type TEXT PRIMARY KEY,
+            geometry_type TEXT NOT NULL DEFAULT 'point',
+            lon_column TEXT,
+            lat_column TEXT,
+            alt_column TEXT,
+            geometry_column TEXT,
+            srid INTEGER DEFAULT 4326,
+            default_style TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT
+        )
+    ")
+
+    # Spatial layers
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_spatial_layers (
+            layer_id TEXT PRIMARY KEY,
+            layer_name TEXT NOT NULL,
+            description TEXT,
+            object_type TEXT NOT NULL,
+            concept_id TEXT,
+            scope TEXT,
+            score_id TEXT,
+            style_rules TEXT,
+            visible BOOLEAN DEFAULT TRUE,
+            layer_order INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT
+        )
+    ")
+
+    # Spatial regions
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_spatial_regions (
+            region_id TEXT PRIMARY KEY,
+            region_name TEXT NOT NULL,
+            region_type TEXT NOT NULL DEFAULT 'bbox',
+            bbox_west REAL,
+            bbox_south REAL,
+            bbox_east REAL,
+            bbox_north REAL,
+            geometry_wkt TEXT,
+            description TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT
+        )
+    ")
+
+    # Spatial exports log
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_spatial_exports (
+            export_id TEXT PRIMARY KEY,
+            export_type TEXT NOT NULL,
+            object_type TEXT NOT NULL,
+            concept_id TEXT,
+            scope TEXT,
+            score_id TEXT,
+            region_id TEXT,
+            record_count INTEGER,
+            file_path TEXT,
+            exported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            exported_by TEXT,
+            parameters TEXT
+        )
+    ")
+
+    # --- Actions & Writeback tables ---
+
+    # Action types
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_action_types (
+            action_type_id TEXT PRIMARY KEY,
+            action_name TEXT NOT NULL,
+            description TEXT,
+            object_type TEXT NOT NULL,
+            trigger_concept TEXT,
+            trigger_scope TEXT,
+            trigger_condition TEXT,
+            parameters TEXT,
+            writeback_table TEXT,
+            writeback_columns TEXT,
+            require_note BOOLEAN DEFAULT FALSE,
+            require_approval BOOLEAN DEFAULT FALSE,
+            allowed_roles TEXT,
+            enabled BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT
+        )
+    ")
+
+    # Action log
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_action_log (
+            action_id TEXT PRIMARY KEY,
+            action_type_id TEXT NOT NULL,
+            object_key TEXT NOT NULL,
+            parameters TEXT,
+            concept_value BOOLEAN,
+            status TEXT DEFAULT 'completed',
+            executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            executed_by TEXT NOT NULL,
+            approved_at TIMESTAMP,
+            approved_by TEXT,
+            notes TEXT,
+            result TEXT,
+            error_message TEXT
+        )
+    ")
+
+    # --- Composite Scores tables ---
+
+    # Scores
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_scores (
+            score_id TEXT PRIMARY KEY,
+            score_name TEXT NOT NULL,
+            description TEXT,
+            object_type TEXT NOT NULL,
+            aggregation TEXT DEFAULT 'weighted_sum',
+            score_range_min REAL DEFAULT 0,
+            score_range_max REAL DEFAULT 100,
+            thresholds TEXT,
+            enabled BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT
+        )
+    ")
+
+    # Score components
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_score_components (
+            score_id TEXT NOT NULL,
+            component_id TEXT NOT NULL,
+            concept_id TEXT NOT NULL,
+            scope TEXT NOT NULL,
+            version INTEGER,
+            weight REAL DEFAULT 1.0,
+            transform TEXT,
+            invert BOOLEAN DEFAULT FALSE,
+            required BOOLEAN DEFAULT TRUE,
+            display_order INTEGER DEFAULT 0,
+            PRIMARY KEY (score_id, component_id)
+        )
+    ")
+
+    # Score observations
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_score_observations (
+            observation_id TEXT PRIMARY KEY,
+            score_id TEXT NOT NULL,
+            observed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            total_objects INTEGER NOT NULL,
+            avg_score REAL,
+            min_score REAL,
+            max_score REAL,
+            std_dev REAL,
+            tier_counts TEXT,
+            observer_id TEXT
+        )
+    ")
+
+    # --- Scenario Analysis tables ---
+
+    # Scenarios
+    DBI::dbExecute(con, "
+        CREATE TABLE IF NOT EXISTS ont_scenarios (
+            scenario_id TEXT PRIMARY KEY,
+            scenario_name TEXT,
+            concept_id TEXT NOT NULL,
+            scope TEXT NOT NULL,
+            current_version INTEGER NOT NULL,
+            proposed_sql TEXT NOT NULL,
+            analysis_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            analyzed_by TEXT,
+            current_matches INTEGER,
+            proposed_matches INTEGER,
+            newly_included INTEGER,
+            newly_excluded INTEGER,
+            unchanged INTEGER,
+            results_json TEXT,
+            status TEXT DEFAULT 'analyzed',
+            decision_notes TEXT,
+            decided_by TEXT,
+            decided_at TIMESTAMP
+        )
+    ")
 }
