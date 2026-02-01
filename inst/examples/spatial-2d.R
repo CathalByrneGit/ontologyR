@@ -123,9 +123,8 @@ cli::cli_alert_success("Geometry registered for WeatherStation")
 cli::cli_h2("Creating concepts")
 
 # Concept: High wind stations
-ont_add_concept(
+ont_define_concept(
     concept_id = "high_wind",
-    name = "High Wind Station",
     description = "Weather stations with wind speed above 25 km/h",
     object_type = "WeatherStation"
 )
@@ -139,9 +138,8 @@ ont_add_version(
 )
 
 # Concept: Active stations
-ont_add_concept(
+ont_define_concept(
     concept_id = "active_station",
-    name = "Active Station",
     description = "Weather stations currently operational",
     object_type = "WeatherStation"
 )
@@ -155,9 +153,8 @@ ont_add_version(
 )
 
 # Concept: Coastal stations (low elevation, high humidity)
-ont_add_concept(
+ont_define_concept(
     concept_id = "coastal_station",
-    name = "Coastal Station",
     description = "Stations likely near the coast (low elevation, high humidity)",
     object_type = "WeatherStation"
 )
