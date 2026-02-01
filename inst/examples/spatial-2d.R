@@ -170,6 +170,30 @@ ont_add_version(
 cli::cli_alert_success("Created 3 concepts: high_wind, active_station, coastal_station")
 
 # -----------------------------------------------------------------------------
+# Step 5b: Create a composite score
+# -----------------------------------------------------------------------------
+cli::cli_h2("Creating composite score")
+
+# Weather severity score combines all three concepts
+ont_define_score(
+    score_id = "weather_severity",
+    score_name = "Weather Severity",
+    object_type = "WeatherStation",
+    description = "Combined severity score based on wind, status, and coastal exposure",
+    components = list(
+        list(concept_id = "high_wind", scope = "operational", weight = 0.4),
+        list(concept_id = "active_station", scope = "operational", weight = 0.3),
+        list(concept_id = "coastal_station", scope = "operational", weight = 0.3)
+    ),
+    aggregation = "weighted_sum",
+    score_range_min = 0,
+    score_range_max = 100,
+    thresholds = list(low = 30, medium = 60, high = 80)
+)
+
+cli::cli_alert_success("Created composite score: weather_severity (0-100)")
+
+# -----------------------------------------------------------------------------
 # Step 6: Evaluate and display results
 # -----------------------------------------------------------------------------
 cli::cli_h2("Evaluating concepts")
@@ -192,10 +216,10 @@ cli::cli_alert_info("The viewer will open in your browser.")
 cli::cli_alert_info("Try the following in the app:")
 cli::cli_ul(c(
     "Select 'WeatherStation' as the object type",
-    "Choose a concept to color by (e.g., 'high_wind')",
+    "Set 'Color By' to 'Concept' and pick 'high_wind' to see red/green markers",
+    "Set 'Color By' to 'Score' and pick 'Weather Severity' for gradient colors",
     "Click on markers to see station details",
-    "Use the layer control to switch base maps",
-    "Enable clustering for grouped view"
+    "Use the layer control to switch base maps"
 ))
 
 # Run the viewer (uses the in-memory connection)
