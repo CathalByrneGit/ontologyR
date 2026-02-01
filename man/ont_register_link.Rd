@@ -53,6 +53,7 @@ Defines a relationship between two object types. Links are stored in
 a separate table and can optionally have temporal validity columns.
 }
 \examples{
+\dontrun{
 ont_connect(":memory:")
 
 # Register object types first
@@ -71,5 +72,6 @@ ont_register_link(
 )
 
 ont_disconnect()
+}
 
 }

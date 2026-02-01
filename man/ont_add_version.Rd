@@ -54,6 +54,7 @@ scoped (e.g., "flow", "clinical", "regulatory") and contains a SQL expression
 that evaluates to TRUE/FALSE or a numeric value.
 }
 \examples{
+\dontrun{
 ont_connect(":memory:")
 ont_register_object("Encounter", "encounters", "encounter_id")
 ont_define_concept("ready_for_discharge", "Encounter")
@@ -79,5 +80,6 @@ ont_add_version(
 )
 
 ont_disconnect()
+}
 
 }

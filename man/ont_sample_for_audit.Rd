@@ -44,6 +44,7 @@ human review. This is the foundation of drift detection: by regularly
 auditing samples, you can detect when definitions diverge from reality.
 }
 \examples{
+\dontrun{
 ont_connect(":memory:")
 # ... setup ...
 
@@ -54,5 +55,6 @@ sample <- ont_sample_for_audit(
     n = 20,
     concept_value = TRUE
 )
+}
 
 }
