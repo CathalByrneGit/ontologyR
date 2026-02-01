@@ -349,8 +349,15 @@ server <- function(input, output, session) {
             # Convert to data frame for map
             if (!is.null(geojson) && length(geojson$features) > 0) {
                 rv$map_data <- geojson_to_df(geojson)
+
+                # Extract marker colors directly from GeoJSON features
+                # (avoids R data.frame mangling "marker-color" -> "marker.color")
+                rv$marker_colors <- vapply(geojson$features, function(f) {
+                    f$properties$`marker-color` %||% "#3388ff"
+                }, character(1))
             } else {
                 rv$map_data <- NULL
+                rv$marker_colors <- NULL
             }
 
             showNotification("Data loaded successfully", type = "message")
@@ -415,15 +422,15 @@ server <- function(input, output, session) {
             return()
         }
 
-        # Get colors
-        colors <- if ("marker-color" %in% names(df)) {
-            df$`marker-color`
+        # Use pre-extracted colors from GeoJSON features
+        colors <- if (!is.null(rv$marker_colors) && length(rv$marker_colors) == nrow(df)) {
+            rv$marker_colors
         } else {
             rep("#3388ff", nrow(df))
         }
 
-        # Build popup content
-        popup_cols <- setdiff(names(df), c("lon", "lat", "marker-color"))
+        # Build popup content - exclude internal columns
+        popup_cols <- setdiff(names(df), c("lon", "lat", "marker-color", "marker.color"))
         popups <- apply(df[, popup_cols, drop = FALSE], 1, function(row) {
             items <- paste0("<b>", popup_cols, ":</b> ", row)
             paste(items, collapse = "<br/>")
