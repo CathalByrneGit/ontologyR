@@ -278,7 +278,9 @@ ont_export_geojson <- function(object_type,
 
         # Add styling based on concept/score values
         if (!is.null(concept_id) && "concept_value" %in% names(row)) {
-            if (isTRUE(row$concept_value)) {
+            # Handle both logical TRUE/FALSE and integer 1/0 from DuckDB
+            val <- as.logical(row$concept_value)
+            if (isTRUE(val)) {
                 props$`marker-color` <- style$color_true %||% "#FF0000"
             } else {
                 props$`marker-color` <- style$color_false %||% "#00FF00"

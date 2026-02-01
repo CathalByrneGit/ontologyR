@@ -375,8 +375,10 @@ server <- function(input, output, session) {
             data.frame(
                 lon = coords[1],
                 lat = coords[2],
-                as.data.frame(props, stringsAsFactors = FALSE),
-                stringsAsFactors = FALSE
+                as.data.frame(props, stringsAsFactors = FALSE,
+                              check.names = FALSE),
+                stringsAsFactors = FALSE,
+                check.names = FALSE
             )
         })
 
